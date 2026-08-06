@@ -6,10 +6,10 @@
   <title>Hacker House Goa 2026 — #FrameInGoa Generator</title>
   <meta name="description" content="Official Builder ID & PFP Overlay Generator for Hacker House Goa 2026. Less Noise. More Signal.">
   
-  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <!-- Google Fonts: Inter, JetBrains Mono & Noto Sans Devanagari -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;700;800&family=Noto+Sans+Devanagari:wght@700;900&display=swap" rel="stylesheet">
   
   <!-- CSS Stylesheet -->
   <link rel="stylesheet" href="styles.css">
@@ -18,12 +18,72 @@
   <script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
 </head>
 <body>
+  <!-- Top Navigation Bar -->
+  <nav class="top-navbar">
+    <div class="nav-container">
+      <!-- Left Corner: Event Logo & Brand Text touching left edge -->
+      <a href="https://hhgoa.com" target="_blank" rel="noopener noreferrer" class="nav-brand" aria-label="Hacker House Goa 2026 Official Site" title="Hacker House Goa 2026">
+        <img src="assets/logo.svg" alt="Hacker House Goa 2026 Logo" class="nav-logo">
+        <div class="nav-brand-text">
+          <span class="nav-brand-title">#FrameInGoa</span>
+          <span class="nav-brand-sub">HH GOA 2026</span>
+        </div>
+      </a>
+
+      <!-- Middle: Official Site, GitHub, Submission Link (with text) -->
+      <div class="nav-center-links">
+        <a href="https://hhgoa.com" target="_blank" rel="noopener noreferrer" class="nav-center-item" title="Official Site: hhgoa.com">
+          <svg class="nav-center-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="2" y1="12" x2="22" y2="12"/>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+          </svg>
+          <span>Official Site</span>
+        </a>
+
+        <a href="https://github.com/Ish-xo/hhgoa26-frameingoa" target="_blank" rel="noopener noreferrer" class="nav-center-item" title="GitHub Repository">
+          <svg class="nav-center-icon" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+          </svg>
+          <span>GitHub</span>
+        </a>
+
+        <a href="https://forms.gle/jM5hTaGvsrfEfixPA" target="_blank" rel="noopener noreferrer" class="nav-center-item nav-center-cta" title="Official Google Submission Form">
+          <svg class="nav-center-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+            <polyline points="10 9 9 9 8 9"/>
+          </svg>
+          <span>Submit Form</span>
+        </a>
+      </div>
+
+      <!-- Right Corner: X & LinkedIn (Icon Logos Only) touching right edge -->
+      <div class="nav-social-right">
+        <!-- X / Twitter (X Logo) -->
+        <a href="https://x.com/hashtag/FrameInGoa" target="_blank" rel="noopener noreferrer" class="nav-util-icon-btn" aria-label="X (Twitter) #FrameInGoa" title="X (Twitter) #FrameInGoa">
+          <svg class="nav-util-icon" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+          </svg>
+        </a>
+
+        <!-- LinkedIn (LinkedIn Logo) -->
+        <a href="https://www.linkedin.com/company/hackerhousegoa" target="_blank" rel="noopener noreferrer" class="nav-util-icon-btn" aria-label="LinkedIn Account" title="LinkedIn">
+          <svg class="nav-util-icon" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1-2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </nav>
+
   <div class="app-container">
-    <!-- Header Section -->
+    <!-- Header Section: Official Text Image Graphic -->
     <header class="main-header">
-      <div class="badge-pill">HACKER HOUSE GOA 2026</div>
-      <h1 class="brand-title">#FrameInGoa Studio</h1>
-      <p class="brand-tagline">LESS NOISE. MORE SIGNAL. — 28 – 31 OCT 2026 | GOA, INDIA</p>
+      <div class="badge-pill">OFFICIAL BUILDER STUDIO</div>
+      <img src="assets/text-transparent.png" alt="Hacker House Goa 2026 — #FrameInGoa" class="hero-title-image">
     </header>
 
     <!-- Studio Layout -->
