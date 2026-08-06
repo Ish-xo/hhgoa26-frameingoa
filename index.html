@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hacker House Goa 2026 — #FrameInGoa Generator</title>
+  <meta name="description" content="Official Builder ID & PFP Overlay Generator for Hacker House Goa 2026. Less Noise. More Signal.">
+  
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
+  
+  <!-- CSS Stylesheet -->
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- heic2any Library for iPhone HEIC File Conversion -->
+  <script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header Section -->
+    <header class="main-header">
+      <div class="badge-pill">HACKER HOUSE GOA 2026</div>
+      <h1 class="brand-title">#FrameInGoa Studio</h1>
+      <p class="brand-tagline">LESS NOISE. MORE SIGNAL. — 28 – 31 OCT 2026 | GOA, INDIA</p>
+    </header>
+
+    <!-- Studio Layout -->
+    <main class="studio-grid">
+      <!-- Controls Panel -->
+      <section class="panel controls-panel">
+        <h2 class="panel-title">1. Format & Builder Data</h2>
+        
+        <!-- Format Selector -->
+        <div class="form-group">
+          <label class="form-label">Select Output Format</label>
+          <div class="format-toggle-group">
+            <button type="button" class="btn-toggle active" id="btnFormatB" data-format="formatB">
+              <span class="toggle-icon">💳</span> Builder ID Card
+            </button>
+            <button type="button" class="btn-toggle" id="btnFormatA" data-format="formatA">
+              <span class="toggle-icon">🖼️</span> PFP Overlay
+            </button>
+          </div>
+        </div>
+
+        <!-- Photo Upload Box -->
+        <div class="form-group">
+          <label class="form-label">Upload Photo (JPG, PNG, HEIC)</label>
+          <div class="upload-dropzone" id="dropzone">
+            <input type="file" id="photoInput" accept="image/png, image/jpeg, image/heic, image/heif" hidden>
+            <div class="dropzone-content" id="dropzonePrompt">
+              <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+              </svg>
+              <p class="drop-text">Drag & drop your photo or <span>browse</span></p>
+              <p class="drop-subtext">Supports iPhone HEIC, PNG & JPG (Auto-Cropped)</p>
+            </div>
+            <div class="file-info hidden" id="fileInfo">
+              <span class="file-name" id="fileName">photo.jpg</span>
+              <button type="button" class="btn-remove-file" id="btnRemoveFile">Change</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ID Card Details (Dynamic Controls) -->
+        <div id="idCardInputs">
+          <div class="form-group">
+            <label for="inputName" class="form-label">Builder Name</label>
+            <input type="text" id="inputName" class="form-input" placeholder="e.g. GURUDATT CHOUDHARY" value="GURUDATT CHOUDHARY">
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="inputRole" class="form-label">Role</label>
+              <input type="text" id="inputRole" class="form-input" placeholder="e.g. Builder" value="Builder">
+            </div>
+            <div class="form-group">
+              <label for="inputStack" class="form-label">Tech Stack</label>
+              <input type="text" id="inputStack" class="form-input" placeholder="e.g. Full-Stack" value="Full-Stack">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="selectClass" class="form-label">Builder Title / Class</label>
+            <select id="selectClass" class="form-select">
+              <option value="Pixel Pirate">Pixel Pirate 🏴‍☠️</option>
+              <option value="Protocol Architect">Protocol Architect ⚡</option>
+              <option value="Kernel Runner">Kernel Runner 🏃</option>
+              <option value="AI Synthesizer">AI Synthesizer 🤖</option>
+              <option value="Signal Crafter">Signal Crafter 📡</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <!-- Canvas Preview & Actions Panel -->
+      <section class="panel preview-panel">
+        <h2 class="panel-title">2. Live Visual Proof</h2>
+        
+        <div class="canvas-wrapper">
+          <canvas id="outputCanvas" width="1080" height="1080"></canvas>
+          <div class="loading-overlay hidden" id="loadingOverlay">
+            <div class="spinner"></div>
+            <p id="loadingText">Processing photo...</p>
+          </div>
+        </div>
+
+        <!-- Export Actions -->
+        <div class="action-buttons">
+          <button type="button" class="btn-action btn-download" id="btnDownload">
+            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+            </svg>
+            Download Graphic (.PNG)
+          </button>
+          
+          <button type="button" class="btn-action btn-share" id="btnShareX">
+            <svg class="btn-icon" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+            </svg>
+            Share to X (#FrameInGoa)
+          </button>
+        </div>
+      </section>
+    </main>
+
+    <footer class="main-footer">
+      <p>Hacker House Goa 2026 | Stage 1 Open Trials | Hashtag: <code>#FrameInGoa</code></p>
+    </footer>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+# Exclude PDFs and private documents
+*.pdf
+HHGoa26_Selection_Criteria.pdf
+HH_Goa_2026_Shortlisting_Task.pdf
+
+# OS junk files
+.DS_Store
+Thumbs.db
