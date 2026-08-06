@@ -115,13 +115,13 @@ body::before {
 }
 
 .nav-logo {
-  height: 42px;
-  width: 42px;
-  aspect-ratio: 1 / 1;
-  border-radius: 8px;
-  border: 1px solid rgba(225, 254, 0, 0.35);
-  box-shadow: 0 0 14px rgba(225, 254, 0, 0.2);
-  object-fit: cover;
+  height: 46px;
+  width: auto;
+  max-width: 110px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(225, 254, 0, 0.3);
+  box-shadow: 0 0 12px rgba(225, 254, 0, 0.15);
+  object-fit: contain;
   transition: all 0.25s ease;
 }
 
