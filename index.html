@@ -14,6 +14,8 @@
   <!-- CSS Stylesheet -->
   <link rel="stylesheet" href="styles.css">
 
+  <!-- GSAP for Shuffle Text Animation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
   <!-- heic2any Library for iPhone HEIC File Conversion -->
   <script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
 </head>
@@ -80,10 +82,13 @@
   </nav>
 
   <div class="app-container">
-    <!-- Header Section: Official Text Image Graphic -->
+    <!-- Header Section: Animated Shuffle Hero Text -->
     <header class="main-header">
       <div class="badge-pill">OFFICIAL BUILDER STUDIO</div>
-      <img src="assets/text-transparent.png" alt="Hacker House Goa 2026 — #FrameInGoa" class="hero-title-image">
+      <div class="hero-text-container">
+        <h1 class="brand-title shuffle-hero-title" data-text="#FrameInGoa">#FrameInGoa</h1>
+        <p class="brand-subtitle shuffle-hero-sub" data-text="HH GOA 2026">HH GOA 2026</p>
+      </div>
     </header>
 
     <!-- Studio Layout -->
@@ -192,5 +197,6 @@
   </div>
 
   <script src="script.js"></script>
+  <script src="shuffle.js"></script>
 </body>
 </html>

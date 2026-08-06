@@ -305,6 +305,59 @@ body::before {
   user-select: none;
 }
 
+/* React Bits Shuffle Component Styles */
+.hero-text-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem;
+  padding: 0.5rem 0;
+  user-select: none;
+  cursor: pointer;
+}
+
+.brand-title.shuffle-hero-title {
+  font-family: var(--font-mono);
+  font-weight: 900;
+  font-size: clamp(2.5rem, 6vw, 4.75rem);
+  letter-spacing: -0.01em;
+  color: var(--color-neon-yellow);
+  text-shadow: 0 0 25px rgba(225, 254, 0, 0.4), 0 0 50px rgba(225, 254, 0, 0.2);
+  line-height: 1.1;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.brand-subtitle.shuffle-hero-sub {
+  font-family: var(--font-mono);
+  font-weight: 800;
+  font-size: clamp(1rem, 2.2vw, 1.75rem);
+  letter-spacing: 0.25em;
+  color: #FFFFFF;
+  text-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.shuffle-char-wrapper {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: baseline;
+  position: relative;
+}
+
+.shuffle-char-strip {
+  display: inline-block;
+  will-change: transform;
+}
+
+.shuffle-char {
+  line-height: 1;
+  display: inline-block;
+  text-align: center;
+}
+
 .badge-pill {
   background: rgba(225, 254, 0, 0.08);
   color: var(--color-neon-yellow);
