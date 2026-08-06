@@ -19,6 +19,12 @@ The website works directly in any browser (desktop & mobile) with zero installat
 
 ---
 
+## 📸 Output & Application Preview
+
+![Hacker House Goa 2026 Preview](assets/gitss.png)
+
+---
+
 ## 🎨 Visual Identity & Design System
 
 The visual aesthetic strictly adheres to the official Hacker House Goa 2026 brand identity:
