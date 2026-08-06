@@ -358,6 +358,30 @@ body::before {
   text-align: center;
 }
 
+/* React Bits StrokeText Component Styles */
+.stroke-text {
+  display: block;
+  width: 100%;
+  line-height: 0;
+  user-select: none;
+}
+
+.stroke-text--hover {
+  cursor: pointer;
+}
+
+.stroke-text__svg {
+  display: block;
+  width: 100%;
+  height: var(--stroke-text-height, 140px);
+  overflow: visible;
+}
+
+.stroke-text__stroke,
+.stroke-text__fill {
+  user-select: none;
+}
+
 .badge-pill {
   background: rgba(225, 254, 0, 0.08);
   color: var(--color-neon-yellow);
