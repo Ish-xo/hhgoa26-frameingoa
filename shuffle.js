@@ -201,8 +201,8 @@ function initShuffle(element, options = {}) {
   }
 }
 
-// Auto-initialize on DOM content loaded
-document.addEventListener('DOMContentLoaded', () => {
+// Auto-initialize on DOM content loaded or ready
+function initAllShuffle() {
   const titleEl = document.querySelector('.shuffle-hero-title');
   const subEl = document.querySelector('.shuffle-hero-sub');
 
@@ -229,4 +229,10 @@ document.addEventListener('DOMContentLoaded', () => {
       triggerOnHover: true
     });
   }
-});
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initAllShuffle);
+} else {
+  initAllShuffle();
+}

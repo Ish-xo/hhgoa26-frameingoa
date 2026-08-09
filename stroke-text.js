@@ -8,8 +8,8 @@ function initStrokeText(container, options = {}) {
 
   const defaults = {
     text: 'HACKER HOUSE GOA',
-    strokeColor: '#E1FE00',
-    fillColor: '#FFFFFF',
+    strokeColor: '#FFE800',
+    fillColor: '#FFE800',
     strokeWidth: 2,
     drawDuration: 1.6,
     fillDelay: 0.2,
@@ -218,9 +218,20 @@ function initStrokeText(container, options = {}) {
         timeline.play(0);
       };
       container.addEventListener('pointerenter', play);
+      container.addEventListener('mouseenter', play);
     } else {
       timeline = build();
       timeline.play(0);
+      if (config.triggerOnHover) {
+        container.style.cursor = 'pointer';
+        const play = () => {
+          timeline?.kill();
+          timeline = build();
+          timeline.play(0);
+        };
+        container.addEventListener('pointerenter', play);
+        container.addEventListener('mouseenter', play);
+      }
     }
   };
 
@@ -233,13 +244,13 @@ function initStrokeText(container, options = {}) {
 }
 
 // Auto-initialize when target element exists
-document.addEventListener('DOMContentLoaded', () => {
+function initAllStrokeText() {
   const strokeHeroEl = document.querySelector('.stroke-hero-title');
   if (strokeHeroEl) {
     initStrokeText(strokeHeroEl, {
       text: 'HACKER HOUSE GOA',
-      strokeColor: '#E1FE00',
-      fillColor: '#FFFFFF',
+      strokeColor: '#FFE800',
+      fillColor: '#FFE800',
       strokeWidth: 2,
       drawDuration: 1.6,
       fillDelay: 0.2,
@@ -250,7 +261,14 @@ document.addEventListener('DOMContentLoaded', () => {
       fontSize: 100,
       fontWeight: 900,
       letterSpacing: -2,
+      fontFamily: "'JetBrains Mono', monospace",
       triggerOnHover: true
     });
   }
-});
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initAllStrokeText);
+} else {
+  initAllStrokeText();
+}
