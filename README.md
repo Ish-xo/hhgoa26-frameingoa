@@ -21,7 +21,14 @@ The website works directly in any browser (desktop & mobile) with zero installat
 
 ## 📸 Output & Application Preview
 
-![Hacker House Goa 2026 Preview](assets/gitss.png)
+### Format C — X Banner (1500×500)
+![X Banner Preview](assets/preview_banner.png)
+
+### Format B — Builder ID Card (900×1600)
+![Builder ID Card Preview](assets/preview_idcard.png)
+
+### Format A — PFP Overlay (1080×1080)
+![PFP Overlay Preview](assets/preview_pfp.png)
 
 ---
 
