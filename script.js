@@ -1,12 +1,15 @@
 /**
  * Hacker House Goa 2026 — #FrameInGoa Engine
- * Native HTML5 Canvas Renderer & Event Handler
+ * Team ProofLabs
+ * Direct Interactive Canvas Renderer (Format A: Circular PFP, Format B: Builder ID, Format C: X Banner)
  */
 
 function initApp() {
   // DOM Elements
-  let canvas = document.getElementById('outputCanvas');
-  let ctx = canvas.getContext('2d');
+  const canvas = document.getElementById('outputCanvas');
+  const ctx = canvas.getContext('2d');
+  const canvasWrapper = document.getElementById('canvasWrapper');
+  const canvasHint = document.getElementById('canvasHint');
 
   const photoInput = document.getElementById('photoInput');
   const dropzone = document.getElementById('dropzone');
@@ -15,8 +18,13 @@ function initApp() {
   const fileName = document.getElementById('fileName');
   const btnRemoveFile = document.getElementById('btnRemoveFile');
 
+  const photoAdjustGroup = document.getElementById('photoAdjust');
+  const photoZoomSlider = document.getElementById('photoZoom');
+  const btnResetPhoto = document.getElementById('btnResetPhoto');
+
   const btnFormatB = document.getElementById('btnFormatB');
   const btnFormatA = document.getElementById('btnFormatA');
+  const btnFormatC = document.getElementById('btnFormatC');
   const idCardInputs = document.getElementById('idCardInputs');
 
   const inputName = document.getElementById('inputName');
@@ -31,11 +39,9 @@ function initApp() {
   const loadingOverlay = document.getElementById('loadingOverlay');
   const loadingText = document.getElementById('loadingText');
 
-  // Procedural Noise Pattern Cache
   let noisePattern = null;
 
-  // Preload logo for canvas rendering
-  // Load via data URL so the canvas is NEVER tainted (prevents SecurityError on toDataURL/toBlob)
+  // Preload Logo
   const logoImg = new Image();
   (function loadLogoSafe() {
     fetch('assets/logo.svg')
@@ -43,140 +49,150 @@ function initApp() {
       .then(blob => {
         const reader = new FileReader();
         reader.onloadend = () => {
-          logoImg.src = reader.result; // data: URL — no CORS, never tainted
+          logoImg.src = reader.result;
           logoImg.onload = () => renderCanvas();
         };
         reader.readAsDataURL(blob);
       })
       .catch(() => {
-        // If fetch fails, try direct load (may taint canvas, but download has fallback)
         logoImg.src = 'assets/logo.svg';
         logoImg.onload = () => renderCanvas();
       });
   })();
 
-  // Preload background image as a data URL so the canvas is NEVER tainted.
-  // This guarantees toDataURL() works in every browser, including file:// URLs.
+  // Preload Background Image (bg.jpeg)
   const bgImg = new Image();
-  // Set crossOrigin so images served with CORS headers don't taint the canvas
   bgImg.crossOrigin = 'anonymous';
   (function loadBgSafe() {
-    fetch('assets/id_bg.jpeg')
+    fetch('assets/bg.jpeg')
       .then(res => res.blob())
       .then(blob => {
         const reader = new FileReader();
         reader.onloadend = () => {
-          bgImg.src = reader.result; // data: URL — no CORS, never tainted
+          bgImg.src = reader.result;
           bgImg.onload = () => renderCanvas();
         };
         reader.readAsDataURL(blob);
       })
       .catch(() => {
-        // If fetch fails (e.g. strict file:// with no fetch support), fall back
-        // to loading the image directly so the preview still shows the background.
-        // crossOrigin='anonymous' prevents tainting when served with CORS headers.
-        // If the canvas still gets tainted (e.g. file://), the download function
-        // has a last-resort fallback that redraws without external images.
-        bgImg.src = 'assets/id_bg.jpeg';
+        bgImg.src = 'assets/bg.jpeg';
         bgImg.onload = () => renderCanvas();
       });
   })();
 
   // Application State
   const state = {
-    format: 'formatB', // 'formatB' | 'formatA'
+    format: 'formatB', // 'formatB' | 'formatA' | 'formatC'
     uploadedImage: null,
-    name: inputName.value || 'Nikhil K.',
-    role: inputRole.value || 'Full-Stack Developer',
-    skills: inputSkills.value || 'React, AI/ML, Web3',
-    team: inputTeam.value || 'CodeNomads',
-    title: inputTitle.value || 'Pixel Pirate',
-    serialNumber: '#034 / 247',
-    batchStatus: 'ALPHA // FIRST WAVE'
+    zoom: 1.0,
+    panX: 0,
+    panY: 0,
+    name: '',
+    role: '',
+    skills: '',
+    team: '',
+    title: '',
+    serialNumber: '#HHG-2026-' + String(Math.floor(Math.random() * 9000) + 1000),
+    batchStatus: 'ALPHA // FIRST WAVE',
+    pfpBorderThickness: 10,
+    pfpBorderPadding: 16
   };
 
-  // Initial Render & Font Load Listener
+  const presetTitles = [
+    'Pixel Pirate', 'Protocol Architect', 'Prompt Alchemist', 'Byte Bandit',
+    'Jungle Coder', 'Gas Optimizer', 'Merge Conflict Mystic', 'Async Custodian',
+    'Salt-Crusted Tinkerer', 'Stack Overflow Sage', 'Terminal Wizard', 'Kernel Runner',
+    'Ship It Shaman', 'Cache Whisperer', 'Zero Day Dreamer', 'Refactor Ronin',
+    'Deadline Defier', 'Debug Yogi', 'Edge Case Wrangler', 'Goa Growth Hacker'
+  ];
+
+  // Initial Render
   renderCanvas();
   if (document.fonts) {
     document.fonts.ready.then(() => renderCanvas());
   }
 
-  // ----------------------------------------------------
-  // EVENT LISTENERS
-  // ----------------------------------------------------
+  // Initialize Title Animation
+  const heroTitle = document.querySelector('.stroke-hero-title');
+  if (typeof initStrokeText === 'function' && heroTitle) {
+    initStrokeText(heroTitle, {
+      text: 'HACKER HOUSE GOA',
+      strokeColor: '#FFE800',
+      fillColor: '#FFE800',
+      strokeWidth: 2,
+      drawDuration: 1.6,
+      fillDelay: 0.2,
+      stagger: 0.05,
+      ease: 'power2.out',
+      trigger: 'loop'
+    });
+  }
 
-  // Format Toggles
-  btnFormatB.addEventListener('click', (e) => {
-    e.preventDefault();
-    setFormat('formatB');
+  // ----------------------------------------------------
+  // FORMAT SWITCHING
+  // ----------------------------------------------------
+  [btnFormatB, btnFormatA, btnFormatC].forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const newFormat = btn.id === 'btnFormatB' ? 'formatB' : (btn.id === 'btnFormatA' ? 'formatA' : 'formatC');
+      setFormat(newFormat);
+    });
   });
 
-  btnFormatA.addEventListener('click', (e) => {
-    e.preventDefault();
-    setFormat('formatA');
-  });
+  const pfpInputs = document.getElementById('pfpInputs');
+  const pfpThicknessInput = document.getElementById('pfpBorderThickness');
+  const pfpPaddingInput = document.getElementById('pfpBorderPadding');
 
   function setFormat(newFormat) {
     state.format = newFormat;
+
+    [btnFormatB, btnFormatA, btnFormatC].forEach(b => b.classList.remove('active'));
     if (newFormat === 'formatB') {
       btnFormatB.classList.add('active');
-      btnFormatA.classList.remove('active');
-      if (idCardInputs) idCardInputs.classList.remove('hidden');
-    } else {
+    } else if (newFormat === 'formatA') {
       btnFormatA.classList.add('active');
-      btnFormatB.classList.remove('active');
-      if (idCardInputs) idCardInputs.classList.add('hidden');
+    } else {
+      btnFormatC.classList.add('active');
     }
+
+    if (newFormat === 'formatA') {
+      if (idCardInputs) idCardInputs.classList.add('hidden');
+      if (pfpInputs) pfpInputs.classList.remove('hidden');
+    } else {
+      if (idCardInputs) idCardInputs.classList.remove('hidden');
+      if (pfpInputs) pfpInputs.classList.add('hidden');
+    }
+
+    if (canvasWrapper) canvasWrapper.dataset.format = newFormat;
     renderCanvas();
   }
 
-  // Inputs: live update on every keystroke
-  inputName.addEventListener('input', (e) => {
-    state.name = e.target.value || 'Nikhil K.';
-    renderCanvas();
-  });
-  inputRole.addEventListener('input', (e) => {
-    state.role = e.target.value || 'Full-Stack Developer';
-    renderCanvas();
-  });
-  inputSkills.addEventListener('input', (e) => {
-    state.skills = e.target.value || 'React, AI/ML, Web3';
-    renderCanvas();
-  });
-  inputTeam.addEventListener('input', (e) => {
-    state.team = e.target.value || 'CodeNomads';
-    renderCanvas();
-  });
-  inputTitle.addEventListener('input', (e) => {
-    state.title = e.target.value || 'Pixel Pirate';
-    renderCanvas();
-  });
-
-  const presetTitles = [
-    'Pixel Pirate',
-    'Protocol Architect',
-    'Prompt Alchemist',
-    'Byte Bandit',
-    'Jungle Coder',
-    'Gas Optimizer'
-  ];
+  // ----------------------------------------------------
+  // LIVE INPUT HANDLERS
+  // ----------------------------------------------------
+  inputName.addEventListener('input', (e) => { state.name = e.target.value; renderCanvas(); });
+  inputRole.addEventListener('input', (e) => { state.role = e.target.value; renderCanvas(); });
+  inputSkills.addEventListener('input', (e) => { state.skills = e.target.value; renderCanvas(); });
+  inputTeam.addEventListener('input', (e) => { state.team = e.target.value; renderCanvas(); });
+  inputTitle.addEventListener('input', (e) => { state.title = e.target.value; renderCanvas(); });
+  
+  if (pfpThicknessInput) pfpThicknessInput.addEventListener('input', (e) => { state.pfpBorderThickness = parseInt(e.target.value, 10); renderCanvas(); });
+  if (pfpPaddingInput) pfpPaddingInput.addEventListener('input', (e) => { state.pfpBorderPadding = parseInt(e.target.value, 10); renderCanvas(); });
 
   btnRandomTitle.addEventListener('click', (e) => {
     e.preventDefault();
-    const randomIndex = Math.floor(Math.random() * presetTitles.length);
-    const chosenTitle = presetTitles[randomIndex];
+    const chosenTitle = presetTitles[Math.floor(Math.random() * presetTitles.length)];
     inputTitle.value = chosenTitle;
     state.title = chosenTitle;
-
-    // Trigger CSS click animation/feedback on the button
-    btnRandomTitle.style.transform = 'scale(0.9)';
-    setTimeout(() => { btnRandomTitle.style.transform = ''; }, 100);
-
     renderCanvas();
   });
 
-  // Dropzone Click & Drag Event Handlers
-  dropzone.addEventListener('click', () => photoInput.click());
+  // ----------------------------------------------------
+  // PHOTO UPLOAD & HEIC CONVERSION
+  // ----------------------------------------------------
+  dropzone.addEventListener('click', (e) => {
+    if (e.target !== btnRemoveFile) photoInput.click();
+  });
 
   dropzone.addEventListener('dragover', (e) => {
     e.preventDefault();
@@ -184,12 +200,12 @@ function initApp() {
   });
 
   dropzone.addEventListener('dragleave', () => {
-    dropzone.style.borderColor = 'var(--color-border)';
+    dropzone.style.borderColor = '';
   });
 
   dropzone.addEventListener('drop', (e) => {
     e.preventDefault();
-    dropzone.style.borderColor = 'var(--color-border)';
+    dropzone.style.borderColor = '';
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       handleFile(e.dataTransfer.files[0]);
     }
@@ -204,31 +220,29 @@ function initApp() {
   btnRemoveFile.addEventListener('click', (e) => {
     e.stopPropagation();
     state.uploadedImage = null;
+    state.zoom = 1.0;
+    state.panX = 0;
+    state.panY = 0;
     photoInput.value = '';
     dropzonePrompt.classList.remove('hidden');
     fileInfo.classList.add('hidden');
+    photoAdjustGroup.classList.add('hidden');
+    canvasHint.classList.add('hidden');
+    canvasWrapper.removeAttribute('data-has-photo');
     renderCanvas();
   });
 
-  // Export Buttons
-  btnDownload.addEventListener('click', downloadCanvasImage);
-  btnShareX.addEventListener('click', shareToXIntent);
-
-  // ----------------------------------------------------
-  // FILE HANDLING & HEIC CONVERSION
-  // ----------------------------------------------------
-
   async function handleFile(file) {
     try {
+      showLoading('Processing image...');
       let imageBlob = file;
 
-      // Check for iPhone HEIC/HEIF format
       const isHEIC = file.name.toLowerCase().endsWith('.heic') || file.name.toLowerCase().endsWith('.heif');
       if (isHEIC && typeof heic2any !== 'undefined') {
         const convertedBlob = await heic2any({
           blob: file,
           toType: 'image/jpeg',
-          quality: 0.9
+          quality: 0.92
         });
         imageBlob = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob;
       }
@@ -237,224 +251,136 @@ function initApp() {
       reader.onload = (event) => {
         const img = new Image();
         img.onload = () => {
-          openCropModal(img, file.name);
+          state.uploadedImage = img;
+          state.zoom = 1.0;
+          state.panX = 0;
+          state.panY = 0;
+          photoZoomSlider.value = 1.0;
+
+          fileName.textContent = file.name;
+          dropzonePrompt.classList.add('hidden');
+          fileInfo.classList.remove('hidden');
+          photoAdjustGroup.classList.remove('hidden');
+          canvasHint.classList.remove('hidden');
+          canvasWrapper.dataset.hasPhoto = 'true';
+
+          hideLoading();
+          renderCanvas();
         };
         img.src = event.target.result;
       };
       reader.readAsDataURL(imageBlob);
-
     } catch (err) {
-      console.error('Error handling file:', err);
+      console.error('File load error:', err);
       alert('Could not process image file. Please try a standard JPG/PNG.');
+      hideLoading();
     }
   }
 
-  function openCropModal(img, filename) {
-    // Remove existing modal if any
-    const existing = document.getElementById('cropModal');
-    if (existing) existing.remove();
+  // ----------------------------------------------------
+  // INTERACTIVE PHOTO ZOOM & PAN ON CANVAS / SLIDER
+  // ----------------------------------------------------
+  photoZoomSlider.addEventListener('input', (e) => {
+    state.zoom = parseFloat(e.target.value);
+    renderCanvas();
+  });
 
-    // Create modal
-    const modalDiv = document.createElement('div');
-    modalDiv.innerHTML = `
-      <div id="cropModal" class="crop-modal">
-        <div class="crop-modal-content">
-          <div class="crop-modal-header">CROP PROFILE PHOTO</div>
-          <div class="crop-viewport" id="cropViewport">
-            <img id="cropImage" src="${img.src}" alt="Crop preview" />
-          </div>
-          <div class="crop-slider-container">
-            <label class="form-label" style="font-size: 11px;">Zoom</label>
-            <input type="range" id="cropZoomRange" min="1" max="3" step="0.01" value="1" class="crop-slider" />
-          </div>
-          <div class="crop-actions">
-            <button type="button" id="btnCropReset" class="btn-crop-secondary">Reset</button>
-            <button type="button" id="btnCropApply" class="btn-crop-primary">Apply Crop</button>
-          </div>
-        </div>
-      </div>
-    `;
-    document.body.appendChild(modalDiv.firstElementChild);
+  btnResetPhoto.addEventListener('click', () => {
+    state.zoom = 1.0;
+    state.panX = 0;
+    state.panY = 0;
+    photoZoomSlider.value = 1.0;
+    renderCanvas();
+  });
 
-    const modal = document.getElementById('cropModal');
-    const viewport = document.getElementById('cropViewport');
-    const cropImg = document.getElementById('cropImage');
-    const zoomRange = document.getElementById('cropZoomRange');
-    const btnReset = document.getElementById('btnCropReset');
-    const btnApply = document.getElementById('btnCropApply');
+  function isHoveringPhotoArea(clientX, clientY) {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const x = (clientX - rect.left) * scaleX;
+    const y = (clientY - rect.top) * scaleY;
 
-    // Viewport dimensions (aspect ratio matching 460x400)
-    const viewportW = 322;
-    const viewportH = 280;
-
-    // Image original dimensions
-    const naturalW = img.naturalWidth;
-    const naturalH = img.naturalHeight;
-
-    // Base dimensions to cover viewport
-    const imgRatio = naturalW / naturalH;
-    const viewportRatio = viewportW / viewportH;
-    let baseW, baseH;
-
-    if (imgRatio > viewportRatio) {
-      baseH = viewportH;
-      baseW = viewportH * imgRatio;
-    } else {
-      baseW = viewportW;
-      baseH = viewportW / imgRatio;
+    if (state.format === 'formatB') {
+      return x >= 60 && x <= 60 + 360 && y >= 380 && y <= 380 + 480;
+    } else if (state.format === 'formatA') {
+      const cx = 540, cy = 540, r = 400;
+      const dx = x - cx;
+      const dy = y - cy;
+      return (dx * dx + dy * dy) <= (r * r);
+    } else if (state.format === 'formatC') {
+      return x >= 60 && x <= 60 + 240 && y >= 40 && y <= 40 + 320;
     }
-
-    // Zoom and position state
-    let zoom = 1;
-    let dX = (viewportW - baseW) / 2;
-    let dY = (viewportH - baseH) / 2;
-
-    function updateImageTransform() {
-      const activeW = baseW * zoom;
-      const activeH = baseH * zoom;
-      cropImg.style.width = `${baseW}px`;
-      cropImg.style.height = `${baseH}px`;
-      cropImg.style.transform = `translate(${dX}px, ${dY}px) scale(${zoom})`;
-    }
-
-    function constrainOffsets() {
-      const activeW = baseW * zoom;
-      const activeH = baseH * zoom;
-      
-      if (activeW > viewportW) {
-        if (dX > 0) dX = 0;
-        if (dX < viewportW - activeW) dX = viewportW - activeW;
-      } else {
-        dX = (viewportW - activeW) / 2;
-      }
-
-      if (activeH > viewportH) {
-        if (dY > 0) dY = 0;
-        if (dY < viewportH - activeH) dY = viewportH - activeH;
-      } else {
-        dY = (viewportH - activeH) / 2;
-      }
-    }
-
-    // Initialize position and style
-    constrainOffsets();
-    updateImageTransform();
-
-    // Zoom listener
-    zoomRange.addEventListener('input', (e) => {
-      const newZoom = parseFloat(e.target.value);
-      
-      const viewCenterX = viewportW / 2;
-      const viewCenterY = viewportH / 2;
-      
-      const imgCenterX = (viewCenterX - dX) / zoom;
-      const imgCenterY = (viewCenterY - dY) / zoom;
-      
-      zoom = newZoom;
-      
-      dX = viewCenterX - imgCenterX * zoom;
-      dY = viewCenterY - imgCenterY * zoom;
-      
-      constrainOffsets();
-      updateImageTransform();
-    });
-
-    // Drag listeners
-    let isDragging = false;
-    let startX = 0;
-    let startY = 0;
-    let initialDX = 0;
-    let initialDY = 0;
-
-    function onStart(e) {
-      isDragging = true;
-      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-      startX = clientX;
-      startY = clientY;
-      initialDX = dX;
-      initialDY = dY;
-      viewport.style.cursor = 'grabbing';
-    }
-
-    function onMove(e) {
-      if (!isDragging) return;
-      if (e.cancelable) e.preventDefault();
-      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-      const deltaX = clientX - startX;
-      const deltaY = clientY - startY;
-      
-      dX = initialDX + deltaX;
-      dY = initialDY + deltaY;
-      
-      constrainOffsets();
-      updateImageTransform();
-    }
-
-    function onEnd() {
-      isDragging = false;
-      viewport.style.cursor = 'move';
-    }
-
-    viewport.addEventListener('mousedown', onStart);
-    window.addEventListener('mousemove', onMove);
-    window.addEventListener('mouseup', onEnd);
-
-    viewport.addEventListener('touchstart', onStart, { passive: false });
-    window.addEventListener('touchmove', onMove, { passive: false });
-    window.addEventListener('touchend', onEnd);
-
-    // Reset button
-    btnReset.addEventListener('click', () => {
-      zoom = 1;
-      zoomRange.value = 1;
-      dX = (viewportW - baseW) / 2;
-      dY = (viewportH - baseH) / 2;
-      constrainOffsets();
-      updateImageTransform();
-    });
-
-    // Apply Crop button
-    btnApply.addEventListener('click', () => {
-      const activeW = baseW * zoom;
-      const activeH = baseH * zoom;
-      
-      const sx = (-dX / activeW) * naturalW;
-      const sy = (-dY / activeH) * naturalH;
-      const sw = (viewportW / activeW) * naturalW;
-      const sh = (viewportH / activeH) * naturalH;
-
-      const offscreen = document.createElement('canvas');
-      offscreen.width = 920;  
-      offscreen.height = 800;
-      const oCtx = offscreen.getContext('2d');
-      
-      oCtx.drawImage(img, sx, sy, sw, sh, 0, 0, 920, 800);
-
-      const croppedImg = new Image();
-      croppedImg.onload = () => {
-        state.uploadedImage = croppedImg;
-        fileName.textContent = filename;
-        dropzonePrompt.classList.add('hidden');
-        fileInfo.classList.remove('hidden');
-        renderCanvas();
-        modal.remove();
-        
-        window.removeEventListener('mousemove', onMove);
-        window.removeEventListener('mouseup', onEnd);
-        window.removeEventListener('touchmove', onMove);
-        window.removeEventListener('touchend', onEnd);
-      };
-      croppedImg.src = offscreen.toDataURL('image/jpeg', 0.95);
-    });
+    return false;
   }
 
-  // ----------------------------------------------------
-  // CANVAS RENDERING ENGINE
-  // ----------------------------------------------------
+  let isDragging = false;
+  let startX = 0;
+  let startY = 0;
+  let initialPanX = 0;
+  let initialPanY = 0;
 
+  canvasWrapper.addEventListener('mousedown', (e) => {
+    if (!state.uploadedImage) return;
+    if (!isHoveringPhotoArea(e.clientX, e.clientY)) return;
+    isDragging = true;
+    startX = e.clientX;
+    startY = e.clientY;
+    initialPanX = state.panX;
+    initialPanY = state.panY;
+  });
 
+  window.addEventListener('mousemove', (e) => {
+    if (!isDragging || !state.uploadedImage) return;
+    const dx = (e.clientX - startX) * (canvas.width / canvasWrapper.clientWidth);
+    const dy = (e.clientY - startY) * (canvas.height / canvasWrapper.clientHeight);
+    state.panX = initialPanX + dx;
+    state.panY = initialPanY + dy;
+    renderCanvas();
+  });
+
+  window.addEventListener('mouseup', () => { isDragging = false; });
+
+  canvasWrapper.addEventListener('touchstart', (e) => {
+    if (!state.uploadedImage || e.touches.length !== 1) return;
+    if (!isHoveringPhotoArea(e.touches[0].clientX, e.touches[0].clientY)) return;
+    isDragging = true;
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    initialPanX = state.panX;
+    initialPanY = state.panY;
+  }, { passive: true });
+
+  canvasWrapper.addEventListener('touchmove', (e) => {
+    if (!isDragging || !state.uploadedImage || e.touches.length !== 1) return;
+    const dx = (e.touches[0].clientX - startX) * (canvas.width / canvasWrapper.clientWidth);
+    const dy = (e.touches[0].clientY - startY) * (canvas.height / canvasWrapper.clientHeight);
+    state.panX = initialPanX + dx;
+    state.panY = initialPanY + dy;
+    renderCanvas();
+  }, { passive: true });
+
+  canvasWrapper.addEventListener('touchend', () => { isDragging = false; });
+
+  canvasWrapper.addEventListener('wheel', (e) => {
+    if (!state.uploadedImage) return;
+    if (!isHoveringPhotoArea(e.clientX, e.clientY)) return;
+    e.preventDefault();
+    const zoomDelta = e.deltaY < 0 ? 0.08 : -0.08;
+    let newZoom = Math.min(Math.max(1.0, state.zoom + zoomDelta), 3.0);
+    state.zoom = newZoom;
+    photoZoomSlider.value = newZoom;
+    renderCanvas();
+  }, { passive: false });
+
+  // ----------------------------------------------------
+  // EXPORT ACTIONS
+  // ----------------------------------------------------
+  btnDownload.addEventListener('click', downloadCanvasImage);
+  btnShareX.addEventListener('click', shareToXIntent);
+
+  // ----------------------------------------------------
+  // RENDER ENGINE
+  // ----------------------------------------------------
   function getNoisePattern() {
     if (noisePattern) return noisePattern;
     const noiseCanvas = document.createElement('canvas');
@@ -463,468 +389,303 @@ function initApp() {
     noiseCanvas.height = size;
     const nCtx = noiseCanvas.getContext('2d');
     const imgData = nCtx.createImageData(size, size);
-    const data = imgData.data;
-
-    for (let i = 0; i < data.length; i += 4) {
+    for (let i = 0; i < imgData.data.length; i += 4) {
       const val = Math.floor(Math.random() * 255);
-      data[i] = val;
-      data[i + 1] = val;
-      data[i + 2] = val;
-      data[i + 3] = 255;
+      imgData.data[i] = val;
+      imgData.data[i + 1] = val;
+      imgData.data[i + 2] = val;
+      imgData.data[i + 3] = 255;
     }
-
     nCtx.putImageData(imgData, 0, 0);
     noisePattern = ctx.createPattern(noiseCanvas, 'repeat');
     return noisePattern;
   }
 
   function renderCanvas() {
-    // Reset noise pattern cache when canvas is resized
     noisePattern = null;
-
     try {
       if (state.format === 'formatB') {
         canvas.width = 900;
-        canvas.height = 1200;
+        canvas.height = 1600;
         renderFormatB_IDCard();
-      } else {
+      } else if (state.format === 'formatA') {
         canvas.width = 1080;
         canvas.height = 1080;
         renderFormatA_PFPOverlay();
+      } else {
+        canvas.width = 1500;
+        canvas.height = 500;
+        renderFormatC_Banner();
       }
     } catch (err) {
       console.error('Canvas render error:', err);
-      // Fallback: draw error message on canvas
-      ctx.fillStyle = '#0E2418';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = '#F4D83A';
-      ctx.font = '20px monospace';
-      ctx.fillText('Render Error: ' + err.message, 40, 60);
     }
   }
 
   /**
-   * Format B: Builder ID Card Renderer (Custom Built Template)
+   * FORMAT B: BUILDER ID CARD (Bright Goa Beach Theme)
    */
   function renderFormatB_IDCard() {
     const w = 900;
-    const h = 1200;
-    const contentCenterX = 510;
+    const h = 1600;
 
     ctx.clearRect(0, 0, w, h);
     ctx.save();
 
-    // 1. Draw Base Background (Theme image or fallback solid color + radial glow)
+    // 1. Draw Base Background (Beach Theme image)
     if (bgImg.complete && bgImg.naturalWidth > 0) {
-      ctx.drawImage(bgImg, 0, 0, w, h);
-    } else {
-      ctx.fillStyle = '#000000';
-      ctx.fillRect(0, 0, w, h);
-
-      // Deep Emerald Spotlight Radial Glow behind the photo slot (centered at contentCenterX: 510, photoCenterY: 420)
-      const spotlightGlow = ctx.createRadialGradient(contentCenterX, 420, 0, contentCenterX, 420, 450);
-      spotlightGlow.addColorStop(0, 'rgba(8, 70, 32, 1)');       // High-intensity deep emerald spotlight
-      spotlightGlow.addColorStop(0.4, 'rgba(4, 40, 18, 0.9)');    // Fades smoothly out to photo borders
-      spotlightGlow.addColorStop(0.8, 'rgba(1, 10, 5, 0.95)');   // Transition to near black
-      spotlightGlow.addColorStop(1, 'rgba(0, 0, 0, 1)');          // Pitch-black corners
-      ctx.fillStyle = spotlightGlow;
-      ctx.fillRect(0, 0, w, h);
-    }
-
-    // 3. Overlay: Subtle Noise (5% Opacity)
-    const pat = getNoisePattern();
-    if (pat) {
-      ctx.save();
-      ctx.globalAlpha = 0.05;
-      ctx.fillStyle = pat;
-      ctx.fillRect(0, 0, w, h);
-      ctx.restore();
-    }
-
-    // 4. Background Pattern: Step 2 PCB / Circuit Traces (Edge Perimeter Only)
-    drawPCBCircuitLines(ctx, w, h);
-
-    // 5. Step 3: Left Vertical Strip (Width: 120px)
-    drawLeftVerticalStrip(ctx, w, h);
-
-    // Reset text state (strip uses rotate + center align which can bleed)
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'alphabetic';
-
-
-    // 7. Top Center Logo & Branding Block
-    const logoX = 295;
-    const logoY = 90;
-    const logoSize = 75;
-
-    // Draw procedural green glowing house-palm logo
-    drawHousePalmLogo(ctx, logoX, logoY, logoSize);
-
-    // Draw text: HACKER HOUSE
-    ctx.save();
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'alphabetic';
-    ctx.fillStyle = '#FFFFFF';
-    ctx.font = '900 32px "Space Grotesk", "Inter", sans-serif';
-    ctx.fillText('HACKER', logoX + logoSize + 18, logoY + 34);
-    ctx.fillText('HOUSE', logoX + logoSize + 18, logoY + 70);
-
-    // Draw script 'GOA' next to 'HOUSE'
-    ctx.save();
-    ctx.translate(logoX + logoSize + 152, logoY + 68);
-    ctx.rotate(-8 * Math.PI / 180);
-    ctx.fillStyle = '#C8FF33';
-    ctx.font = 'italic 900 34px "Space Grotesk", sans-serif';
-    ctx.fillText('GOA', 0, 0);
-    ctx.restore();
-
-    // Draw tagline: BUILD • HACK • COLLABORATE (with small green palm tree icon)
-    ctx.fillStyle = '#94A3B8';
-    ctx.font = '800 12px "JetBrains Mono", monospace';
-    const tagText = 'BUILD • HACK • COLLABORATE ';
-    ctx.fillText(tagText, logoX + logoSize + 18, logoY + 98);
-    const tagW = ctx.measureText(tagText).width;
-    drawTinyPalmTree(ctx, logoX + logoSize + 18 + tagW, logoY + 86);
-    ctx.restore();
-
-    // 8. Goa Sticker (Top Right, Pink with yellow text, rotated -15 deg, custom green palm tree)
-    ctx.save();
-    ctx.translate(760, 125);
-    ctx.rotate(-15 * Math.PI / 180);
-
-    // Draw palm tree rising out of the top right of the sticker
-    drawStickerPalmTree(ctx, 35, -45);
-
-    // Draw Pink Sticker body
-    ctx.fillStyle = '#FF2D7A';
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
-    ctx.shadowBlur = 10;
-    ctx.shadowOffsetX = -2;
-    ctx.shadowOffsetY = 4;
-    const stickerW = 125;
-    const stickerH = 54;
-    drawRoundedRect(ctx, -stickerW / 2, -stickerH / 2, stickerW, stickerH, 27, true, false);
-
-    // Draw sticker text: गोवा
-    ctx.shadowColor = 'transparent';
-    ctx.fillStyle = '#E1FE00';
-    ctx.font = '900 24px "Noto Sans Devanagari", "Inter", sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('गोवा', 0, 2);
-    ctx.restore();
-
-    // Reset alignment/baseline states
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'alphabetic';
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'alphabetic';
-
-    // 7. Profile Image Container (Vertical Rectangle, 460x400, 20px radius, 3px solid #C8FF33, 15px glow)
-    const photoW = 460;
-    const photoH = 400;
-    const photoX = contentCenterX - photoW / 2; // 280
-    const photoY = 220;
-
-    // Lime glow shadow + Border
-    ctx.save();
-    ctx.shadowColor = 'rgba(124, 255, 79, 0.4)';
-    ctx.shadowBlur = 15;
-    ctx.strokeStyle = '#C8FF33';
-    ctx.lineWidth = 3;
-    drawRoundedRect(ctx, photoX, photoY, photoW, photoH, 20, false, true);
-    ctx.restore();
-
-    // Render User Photo (Halftone B&W) or Cyber Empty State
-    ctx.save();
-    clipRoundedRect(ctx, photoX, photoY, photoW, photoH, 20);
-
-    if (state.uploadedImage) {
-      drawCenterCropImage(ctx, state.uploadedImage, photoX, photoY, photoW, photoH);
-    } else {
-      // Empty Photo Cyber State
-      ctx.fillStyle = '#051209';
-      ctx.fillRect(photoX, photoY, photoW, photoH);
-
-      // Center Crosshair Target
-      const cx = photoX + photoW / 2;
-      const cy = photoY + photoH / 2;
-      ctx.strokeStyle = 'rgba(124, 255, 79, 0.25)';
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(cx - 30, cy); ctx.lineTo(cx + 30, cy);
-      ctx.moveTo(cx, cy - 30); ctx.lineTo(cx, cy + 30);
-      ctx.stroke();
-
-      // Camera Outline Icon
-      ctx.strokeStyle = '#C8FF33';
-      ctx.lineWidth = 2;
-      ctx.strokeRect(cx - 20, cy - 25, 40, 26);
-      ctx.beginPath();
-      ctx.arc(cx, cy - 12, 7, 0, Math.PI * 2);
-      ctx.stroke();
-
-      // Prompt Text
-      ctx.fillStyle = '#C8FF33';
-      ctx.font = '800 13px "JetBrains Mono", monospace';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText('[ + UPLOAD RECTANGLE PHOTO ]', cx, cy + 25);
-    }
-    ctx.restore();
-
-    // 7b. Verified Badge overlapping the bottom center of the photo frame
-    ctx.save();
-    const badgeW = 96;
-    const badgeH = 28;
-    const badgeX = contentCenterX - badgeW / 2;
-    const badgeY = 620 - badgeH / 2; // Centers it perfectly on the Y: 620 line
-    
-    // Draw bright pink pill shadow/glow
-    ctx.shadowColor = 'rgba(255, 38, 117, 0.4)';
-    ctx.shadowBlur = 10;
-    ctx.fillStyle = '#FF2675';
-    drawRoundedRect(ctx, badgeX, badgeY, badgeW, badgeH, 14, true, false);
-    
-    // Text inside the pill
-    ctx.fillStyle = '#F7F7F7';
-    ctx.font = '900 12px "JetBrains Mono", monospace';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    if ('letterSpacing' in ctx) {
-      ctx.letterSpacing = '1px';
-      ctx.fillText('VERIFIED', contentCenterX, 620);
-      ctx.letterSpacing = '0px';
-    } else {
-      ctx.fillText('VERIFIED', contentCenterX, 620);
-    }
-    ctx.restore();
-
-    // 7c. Dark glassmorphic metadata backing panel for text legibility
-    ctx.save();
-    const panelX = 150;
-    const panelY = 642;
-    const panelW = 720;
-    const panelH = 518;
-    const panelRadius = 24;
-
-    // Semi-transparent dark emerald-black fill
-    ctx.fillStyle = 'rgba(4, 15, 9, 0.88)';
-    // Premium neon border
-    ctx.strokeStyle = 'rgba(124, 255, 79, 0.3)';
-    ctx.lineWidth = 2;
-    
-    // Draw the panel
-    drawRoundedRect(ctx, panelX, panelY, panelW, panelH, panelRadius, true, true);
-    ctx.restore();
-
-    // 8. Title Section (JetBrains Mono, #C8FF33, letterSpacing 6px, below image with ample space)
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'alphabetic';
-    ctx.fillStyle = '#C8FF33';
-    const titleText = state.title.toUpperCase();
-    fillTextWithDynamicSize(ctx, titleText, contentCenterX, 690, 640, '900 24px "JetBrains Mono", monospace', 6);
-
-    // 8b. Name Section (Space Grotesk, #FFE94A, below Title with clean space)
-    ctx.fillStyle = '#FFE94A';
-    fillTextWithDynamicSize(ctx, state.name, contentCenterX, 760, 640, '800 56px "Space Grotesk", "Inter", sans-serif', 0);
-
-    // Role Subtitle (Brighter White, letterSpacing 4px, below Name with clean space)
-    ctx.fillStyle = '#FFFFFF';
-    const roleText = state.role.toUpperCase();
-    fillTextWithDynamicSize(ctx, roleText, contentCenterX, 808, 640, '800 19px "JetBrains Mono", monospace', 4);
-
-    // 9. Skills Section (React, AI/ML, WEB3 / transparent pills, border 1.5px #67FF5E, below Role with clean space)
-    const skillList = state.skills.split(',').map(s => s.trim()).filter(s => s.length > 0);
-    let skillFontSize = 16;
-    let paddingX = 22;
-    let pillGap = 14;
-    let pillHeight = 48;
-    
-    function getPillsTotalWidth() {
-      ctx.font = `900 ${skillFontSize}px "JetBrains Mono", monospace`;
-      const widths = skillList.map(skill => {
-        return ctx.measureText(skill.toUpperCase()).width + paddingX * 2;
-      });
-      return widths.reduce((sum, w) => sum + w, 0) + (skillList.length - 1) * pillGap;
-    }
-
-    while (getPillsTotalWidth() > 640 && skillFontSize > 10) {
-      skillFontSize -= 1;
-      paddingX = Math.max(10, paddingX - 1);
-      pillGap = Math.max(6, pillGap - 1);
-      pillHeight = Math.max(36, pillHeight - 2);
-    }
-
-    const pillMeasurements = skillList.map(skill => {
-      ctx.font = `900 ${skillFontSize}px "JetBrains Mono", monospace`;
-      const textW = ctx.measureText(skill.toUpperCase()).width;
-      const pillW = textW + paddingX * 2;
-      return { text: skill.toUpperCase(), width: pillW };
-    });
-
-    const totalPillsWidth = pillMeasurements.reduce((sum, p) => sum + p.width, 0) + (skillList.length - 1) * pillGap;
-    let currentPillX = contentCenterX - totalPillsWidth / 2;
-    const pillsY = 838;
-
-    pillMeasurements.forEach(p => {
-      ctx.strokeStyle = '#67FF5E';
-      ctx.lineWidth = 1.5;
-      drawRoundedRect(ctx, currentPillX, pillsY, p.width, pillHeight, 12, false, true);
-
-      ctx.fillStyle = '#67FF5E';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.font = `900 ${skillFontSize}px "JetBrains Mono", monospace`;
-      ctx.fillText(p.text, currentPillX + p.width / 2, pillsY + pillHeight / 2);
-
-      currentPillX += p.width + pillGap;
-    });
-
-    // 9b. Team Name Badge (Sleek pink badge with sharp borders, centered below skills pills)
-    ctx.save();
-    const teamText = 'TEAM: ' + state.team.toUpperCase();
-    let teamFontSize = 22;
-    
-    ctx.font = `900 ${teamFontSize}px "JetBrains Mono", monospace`;
-    if ('letterSpacing' in ctx) {
-      ctx.letterSpacing = '1px';
-    }
-    
-    let teamTextW = ctx.measureText(teamText).width;
-    while (teamTextW + 40 > 640 && teamFontSize > 12) {
-      teamFontSize -= 1;
-      ctx.font = `900 ${teamFontSize}px "JetBrains Mono", monospace`;
-      teamTextW = ctx.measureText(teamText).width;
-    }
-
-    const boxW = teamTextW + 40;
-    const boxH = 46;
-    const boxX = contentCenterX - boxW / 2;
-    const boxY = 912;
-
-    // Draw solid pink badge with SHARP borders (no curves)
-    ctx.fillStyle = '#FF2675';
-    ctx.fillRect(boxX, boxY, boxW, boxH);
-
-    // Draw text inside
-    ctx.fillStyle = '#FFFFFF';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(teamText, contentCenterX, boxY + boxH / 2);
-    
-    if ('letterSpacing' in ctx) {
-      ctx.letterSpacing = '0px';
-    }
-    ctx.restore();
-
-    // 10. Horizontal Divider Line (Shifted down to Y: 1000)
-    ctx.strokeStyle = 'rgba(103, 255, 94, 0.25)'; // cyber green at 25% opacity
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.moveTo(150, 1000);
-    ctx.lineTo(860, 1000);
-    ctx.stroke();
-
-    // 11. Left Column: Serial Verification ID & Barcode
-    const footerY = 1000;
-    const col1X = 160;
-    
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'alphabetic';
-    
-    ctx.fillStyle = '#67FF5E';
-    ctx.font = '700 13px "JetBrains Mono", monospace';
-    if ('letterSpacing' in ctx) {
-      ctx.letterSpacing = '1px';
-      ctx.fillText('SERIAL VERIFICATION ID', col1X, footerY + 50);
-      ctx.letterSpacing = '0px';
-    } else {
-      ctx.fillText('SERIAL VERIFICATION ID', col1X, footerY + 50);
-    }
-    
-    ctx.fillStyle = '#FFE94A';
-    ctx.font = '900 24px "JetBrains Mono", monospace';
-    ctx.fillText('#HHG-2026-0247', col1X, footerY + 85);
-
-    // Procedural Barcode
-    const barcodeX = col1X;
-    const barcodeY = footerY + 102;
-    const barcodeHeight = 32;
-    const barcodePattern = [3, 2, 4, 1, 2, 3, 1, 4, 2, 2, 3, 1, 4, 1, 2, 4, 3, 1, 2, 3, 1, 4, 2, 1, 3, 2];
-    ctx.fillStyle = '#FFE94A';
-    let currentBarX = barcodeX;
-    barcodePattern.forEach((w, idx) => {
-      if (idx % 2 === 0) {
-        ctx.fillRect(currentBarX, barcodeY, w * 1.5, barcodeHeight);
+      // Draw covered background
+      const imgRatio = bgImg.naturalWidth / bgImg.naturalHeight;
+      const canvasRatio = w / h;
+      let drawW = w;
+      let drawH = h;
+      let drawX = 0;
+      let drawY = 0;
+      
+      if (imgRatio > canvasRatio) {
+        drawW = h * imgRatio;
+        drawX = (w - drawW) / 2;
+      } else {
+        drawH = w / imgRatio;
+        drawY = (h - drawH) / 2;
       }
-      currentBarX += (w * 1.5) + 2;
+      ctx.drawImage(bgImg, drawX, drawY, drawW, drawH);
+    } else {
+      ctx.fillStyle = '#0B3C2D';
+      ctx.fillRect(0, 0, w, h);
+    }
+
+    // 2. Top Header (HACKER HOUSE GOA 2026)
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'top';
+    
+    ctx.fillStyle = '#F2F542'; // hh-yellow
+    ctx.font = '900 24px "Cabinet Grotesk", "Space Grotesk", sans-serif';
+    ctx.fillText('HACKER HOUSE', 60, 90);
+    
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = '900 76px "Cabinet Grotesk", "Space Grotesk", sans-serif';
+    ctx.fillText('GOA 2026', 58, 120);
+
+    // 3. Pink Goa Sticker (Top Right)
+    ctx.save();
+    ctx.translate(w - 140, 120);
+    ctx.rotate(6 * Math.PI / 180);
+    
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
+    ctx.shadowBlur = 10;
+    ctx.shadowOffsetY = 4;
+    
+    ctx.fillStyle = '#FF007F'; // hh-pink
+    drawRoundedRect(ctx, -70, -35, 140, 70, 20, true, false);
+    
+    ctx.shadowColor = 'transparent';
+    ctx.fillStyle = '#F2F542';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = '900 38px "Noto Sans Devanagari", sans-serif';
+    ctx.fillText('गोवा', 0, 4);
+    ctx.restore();
+
+    // 4. Main Content: Photo Frame (Left)
+    const photoX = 60;
+    const photoY = 380;
+    const photoW = 360;
+    const photoH = 480;
+    
+    ctx.save();
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.15)';
+    ctx.shadowBlur = 15;
+    ctx.shadowOffsetY = 8;
+    ctx.fillStyle = '#FFFFFF';
+    drawRoundedRect(ctx, photoX, photoY, photoW, photoH, 30, true, false);
+    ctx.restore();
+
+    ctx.save();
+    clipRoundedRect(ctx, photoX + 6, photoY + 6, photoW - 12, photoH - 12, 24);
+    if (state.uploadedImage) {
+      drawInteractiveImage(ctx, state.uploadedImage, photoX + 6, photoY + 6, photoW - 12, photoH - 12, state.zoom, state.panX, state.panY);
+    } else {
+      ctx.fillStyle = '#F2F542';
+      ctx.fillRect(photoX + 6, photoY + 6, photoW - 12, photoH - 12);
+      ctx.fillStyle = '#0B3C2D';
+      ctx.font = '900 24px "Cabinet Grotesk", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('UPLOAD PHOTO', photoX + photoW / 2, photoY + photoH / 2);
+    }
+    ctx.restore();
+
+    // Small 3:4 tag on photo
+    ctx.fillStyle = '#F2F542';
+    drawRoundedRect(ctx, photoX + photoW - 70, photoY + photoH - 45, 60, 35, 8, true, false);
+    ctx.fillStyle = '#0B3C2D';
+    ctx.font = '900 18px "Space Grotesk", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('3:4', photoX + photoW - 40, photoY + photoH - 27);
+
+    // 5. Info Cards (Right of Photo)
+    const cardX = 440;
+    const cardW = 400;
+    const cardH = 135;
+    
+    const drawInfoCard = (y, label, value, valueColor) => {
+      ctx.save();
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
+      ctx.shadowBlur = 12;
+      ctx.shadowOffsetY = 6;
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+      drawRoundedRect(ctx, cardX, y, cardW, cardH, 24, true, false);
+      ctx.restore();
+
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'alphabetic';
+      ctx.fillStyle = '#6B7280';
+      ctx.font = '800 16px "Space Grotesk", sans-serif';
+      ctx.fillText(label, cardX + 30, y + 45);
+
+      ctx.fillStyle = valueColor;
+      ctx.font = '900 42px "Cabinet Grotesk", "Space Grotesk", sans-serif';
+      ctx.fillText(value, cardX + 30, y + 100);
+    };
+
+    drawInfoCard(380, 'BUILDER NAME', state.name, '#0B3C2D');
+    drawInfoCard(545, 'ROLE / STACK', state.role, '#FF007F');
+    drawInfoCard(710, 'BUILDER TITLE', state.title, '#0B3C2D');
+
+    // 6. Yellow Squad / Team Bar
+    const teamY = 910;
+    ctx.save();
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
+    ctx.shadowBlur = 12;
+    ctx.shadowOffsetY = 6;
+    ctx.fillStyle = '#F2F542';
+    drawRoundedRect(ctx, 60, teamY, 780, 150, 30, true, false);
+    ctx.restore();
+
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#0B3C2D';
+    ctx.font = '800 18px "Space Grotesk", sans-serif';
+    ctx.fillText('SQUAD / TEAM', 100, teamY + 50);
+    
+    ctx.font = '900 58px "Cabinet Grotesk", "Space Grotesk", sans-serif';
+    if (state.team) {
+      ctx.fillText(state.team, 98, teamY + 115);
+    }
+
+    // Date Pill
+    ctx.fillStyle = '#0B3C2D';
+    drawRoundedRect(ctx, 640, teamY + 45, 170, 60, 20, true, false);
+    ctx.fillStyle = '#F2F542';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = '900 22px "Space Grotesk", sans-serif';
+    ctx.fillText('OCT 28-31', 725, teamY + 76);
+
+    // 7. White Tech Stack Bar
+    const stackY = 1090;
+    ctx.save();
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
+    ctx.shadowBlur = 12;
+    ctx.shadowOffsetY = 6;
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+    drawRoundedRect(ctx, 60, stackY, 780, 150, 30, true, false);
+    ctx.restore();
+
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillStyle = '#6B7280';
+    ctx.font = '800 16px "Space Grotesk", sans-serif';
+    ctx.fillText('TECH STACK', 100, stackY + 45);
+
+    const skillList = state.skills ? state.skills.split(',').map(s => s.trim()).filter(s => s.length > 0) : [];
+    let currentPillX = 100;
+    const pillY = stackY + 65;
+    const pillH = 50;
+
+    skillList.forEach(skill => {
+      ctx.font = '800 20px "Space Grotesk", sans-serif';
+      const textW = ctx.measureText(skill).width;
+      const pillW = textW + 40;
+      
+      if (currentPillX + pillW > 820) return;
+
+      ctx.fillStyle = '#0B3C2D';
+      drawRoundedRect(ctx, currentPillX, pillY, pillW, pillH, 16, true, false);
+
+      ctx.fillStyle = '#F2F542';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(skill, currentPillX + pillW / 2, pillY + pillH / 2);
+
+      currentPillX += pillW + 15;
     });
 
-    // 12. Center Column: #FrameInGoa Branding
-    ctx.textAlign = 'center';
-    ctx.fillStyle = '#FFFFFF';
-    ctx.font = '900 32px "Space Grotesk", sans-serif';
-    ctx.fillText('#FrameInGoa', contentCenterX, footerY + 70);
-
-    ctx.fillStyle = '#FFE94A';
-    ctx.font = '700 15px "JetBrains Mono", monospace';
-    ctx.fillText('hhgoa.com', contentCenterX, footerY + 100);
-
-    // 13. Right Column: Yellow QR Code (size 110x110, transparent bg)
-    const qrSize = 110;
-    const qrX = 860 - qrSize;
-    const qrY = footerY + 30;
-
-    // Draw Mock QR details inside
-    ctx.save();
-    ctx.fillStyle = '#FFE94A'; // Yellow QR Modules
-
-    const drawAnchor = (ax, ay) => {
-      // Outer border (7x7 modules equivalent)
-      ctx.fillRect(ax, ay, 28, 28);
-      // Inner space
-      ctx.fillStyle = '#000000'; // Match background
-      ctx.fillRect(ax + 4, ay + 4, 20, 20);
-      // Center dot
-      ctx.fillStyle = '#FFE94A';
-      ctx.fillRect(ax + 8, ay + 8, 12, 12);
-    };
-
-    drawAnchor(qrX + 8, qrY + 8);
-    drawAnchor(qrX + qrSize - 36, qrY + 8);
-    drawAnchor(qrX + 8, qrY + qrSize - 36);
-
-    // Bottom-Right alignment marker
-    ctx.fillRect(qrX + qrSize - 24, qrY + qrSize - 24, 12, 12);
-    ctx.fillStyle = '#000000';
-    ctx.fillRect(qrX + qrSize - 20, qrY + qrSize - 20, 4, 4);
-
-    // Seeding deterministic pseudo-random values based on name
-    let seed = 42;
-    for (let i = 0; i < state.name.length; i++) {
-      seed += state.name.charCodeAt(i);
+    // 8. Pink Torn Paper Footer
+    const footerY = 1380;
+    
+    ctx.fillStyle = '#FF007F';
+    ctx.beginPath();
+    ctx.moveTo(0, h);
+    ctx.lineTo(0, footerY);
+    
+    const segments = 40;
+    const segW = w / segments;
+    for (let i = 0; i <= segments; i++) {
+      const x = i * segW;
+      const randY = footerY - 10 + (Math.sin(i * 13.5) * 12) + (Math.cos(i * 7.1) * 8);
+      ctx.lineTo(x, randY);
     }
-    const qrRandom = () => {
-      const x = Math.sin(seed++) * 10000;
-      return x - Math.floor(x);
+    ctx.lineTo(w, footerY);
+    ctx.lineTo(w, h);
+    ctx.closePath();
+    ctx.fill();
+
+    // Footer Text
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = '900 42px "Cabinet Grotesk", "Space Grotesk", sans-serif';
+    ctx.fillText('#FrameInGoa', 60, 1490);
+    
+    ctx.font = '700 20px "Space Grotesk", sans-serif';
+    ctx.fillText('GOA, INDIA • 2026', 64, 1530);
+
+    // Footer QR Code
+    const qrSize = 140;
+    const qrX = w - qrSize - 60;
+    const qrY = 1410;
+    
+    ctx.fillStyle = '#FFFFFF';
+    drawRoundedRect(ctx, qrX, qrY, qrSize, qrSize, 24, true, false);
+
+    ctx.save();
+    ctx.fillStyle = '#0B3C2D';
+    const drawAnchor = (ax, ay) => {
+      ctx.fillRect(ax, ay, 24, 24);
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(ax + 4, ay + 4, 16, 16);
+      ctx.fillStyle = '#0B3C2D';
+      ctx.fillRect(ax + 8, ay + 8, 8, 8);
     };
 
-    const moduleSize = 3;
-    const startX = qrX + 6;
-    const startY = qrY + 6;
-    const endX = qrX + qrSize - 6;
-    const endY = qrY + qrSize - 6;
+    drawAnchor(qrX + 15, qrY + 15);
+    drawAnchor(qrX + qrSize - 39, qrY + 15);
+    drawAnchor(qrX + 15, qrY + qrSize - 39);
 
-    ctx.fillStyle = '#FFE94A';
-    for (let px = startX; px < endX; px += moduleSize) {
-      for (let py = startY; py < endY; py += moduleSize) {
-        const inTopLeft = (px < qrX + 38 && py < qrY + 38);
-        const inTopRight = (px > qrX + qrSize - 38 && py < qrY + 38);
-        const inBottomLeft = (px < qrX + 38 && py > qrY + qrSize - 38);
-        const inBottomRight = (px > qrX + qrSize - 32 && py > qrY + qrSize - 32);
+    let seed = 42;
+    for (let i = 0; i < state.name.length; i++) { seed += state.name.charCodeAt(i); }
+    const qrRandom = () => { const x = Math.sin(seed++) * 10000; return x - Math.floor(x); };
 
-        if (!inTopLeft && !inTopRight && !inBottomLeft && !inBottomRight) {
+    const moduleSize = 4;
+    for (let px = qrX + 15; px < qrX + qrSize - 15; px += moduleSize) {
+      for (let py = qrY + 15; py < qrY + qrSize - 15; py += moduleSize) {
+        const inTopLeft = (px < qrX + 45 && py < qrY + 45);
+        const inTopRight = (px > qrX + qrSize - 45 && py < qrY + 45);
+        const inBottomLeft = (px < qrX + 45 && py > qrY + qrSize - 45);
+        
+        if (!inTopLeft && !inTopRight && !inBottomLeft) {
           if (qrRandom() > 0.5) {
             ctx.fillRect(px, py, moduleSize, moduleSize);
           }
@@ -933,483 +694,378 @@ function initApp() {
     }
     ctx.restore();
 
-    // Card outer border (visual glow border)
-    ctx.strokeStyle = 'rgba(124, 255, 79, 0.15)';
-    ctx.lineWidth = 3;
-    const br = 28;
-    ctx.beginPath();
-    ctx.moveTo(br, 0);
-    ctx.lineTo(w - br, 0);
-    ctx.quadraticCurveTo(w, 0, w, br);
-    ctx.lineTo(w, h - br);
-    ctx.quadraticCurveTo(w, h, w - br, h);
-    ctx.lineTo(br, h);
-    ctx.quadraticCurveTo(0, h, 0, h - br);
-    ctx.lineTo(0, br);
-    ctx.quadraticCurveTo(0, 0, br, 0);
-    ctx.closePath();
-    ctx.stroke();
-
     ctx.restore();
   }
 
   /**
-   * Format A: PFP Overlay Renderer
+   * FORMAT A: CIRCULAR PFP OVERLAY (1080x1080 - Beach Image Background)
    */
   function renderFormatA_PFPOverlay() {
-    // 1. Base Dark Fill
-    ctx.fillStyle = '#050B07';
-    ctx.fillRect(0, 0, 1080, 1080);
+    const w = 1080;
+    const h = 1080;
+    const cx = w / 2;
+    const cy = h / 2;
+    const r = 400;
 
-    // 2. Render Full Bleed User Photo or Cyber Empty State
+    ctx.clearRect(0, 0, w, h);
+    ctx.save();
+
+    // 1. Draw Beach Background Image
+    if (bgImg.complete && bgImg.naturalWidth > 0) {
+      const imgRatio = bgImg.naturalWidth / bgImg.naturalHeight;
+      const canvasRatio = w / h;
+      let drawW = w;
+      let drawH = h;
+      let drawX = 0;
+      let drawY = 0;
+      
+      if (imgRatio > canvasRatio) {
+        drawW = h * imgRatio;
+        drawX = (w - drawW) / 2;
+      } else {
+        drawH = w / imgRatio;
+        drawY = (h - drawH) / 2;
+      }
+      ctx.drawImage(bgImg, drawX, drawY, drawW, drawH);
+    } else {
+      ctx.fillStyle = '#0B3C2D';
+      ctx.fillRect(0, 0, w, h);
+    }
+
+    // 2. Concentric Colorful Glowing Rings around Photo Circle
+    const thick = state.pfpBorderThickness || 10;
+    const pad = state.pfpBorderPadding || 16;
+    
+    ctx.strokeStyle = '#FF007F'; // Pink
+    ctx.lineWidth = thick * 1.4;
+    ctx.beginPath(); ctx.arc(cx, cy, r + pad + (thick * 0.4), 0, Math.PI * 2); ctx.stroke();
+
+    ctx.strokeStyle = '#F2F542'; // Yellow
+    ctx.lineWidth = thick;
+    ctx.beginPath(); ctx.arc(cx, cy, r + pad - (thick * 0.8), 0, Math.PI * 2); ctx.stroke();
+
+    ctx.strokeStyle = '#FFFFFF'; // White
+    ctx.lineWidth = thick * 0.6;
+    ctx.beginPath(); ctx.arc(cx, cy, r + pad - (thick * 1.8), 0, Math.PI * 2); ctx.stroke();
+
+    // 3. User Photo inside Circle Mask
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.clip();
+
     if (state.uploadedImage) {
-      drawCenterCropImage(ctx, state.uploadedImage, 0, 0, 1080, 1080);
+      drawInteractiveImage(ctx, state.uploadedImage, cx - r, cy - r, r * 2, r * 2, state.zoom, state.panX, state.panY);
     } else {
-      // Empty Photo Cyber State for Format A PFP Overlay
-      ctx.save();
-      ctx.fillStyle = '#07150C';
-      ctx.fillRect(0, 0, 1080, 1080);
+      ctx.fillStyle = '#051A0D';
+      ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
 
-      // Subtle Grid Pattern
-      ctx.strokeStyle = 'rgba(124, 255, 79, 0.1)';
-      ctx.lineWidth = 1;
-      for (let x = 0; x < 1080; x += 60) {
-        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 1080); ctx.stroke();
-      }
-      for (let y = 0; y < 1080; y += 60) {
-        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(1080, y); ctx.stroke();
-      }
-
-      // Center Prompt
-      ctx.fillStyle = '#F4D83A';
-      ctx.font = '900 32px "JetBrains Mono", monospace';
+      ctx.fillStyle = '#E1FE00';
+      ctx.font = '900 30px "JetBrains Mono", monospace';
       ctx.textAlign = 'center';
-      ctx.fillText('[ + UPLOAD PHOTO FOR PFP OVERLAY ]', 1080 / 2, 1080 / 2);
-      ctx.textAlign = 'left';
-      ctx.restore();
+      ctx.textBaseline = 'middle';
+      ctx.fillText('[ + UPLOAD PHOTO ]', cx, cy);
     }
+    ctx.restore();
 
-    // 3. Cyber Green Outer Border Frame
-    ctx.strokeStyle = '#003816';
-    ctx.lineWidth = 40;
-    ctx.strokeRect(20, 20, 1040, 1040);
-
-    // Neon Inner Accent Line
-    ctx.strokeStyle = '#E1FE00';
-    ctx.lineWidth = 6;
-    ctx.strokeRect(40, 40, 1000, 1000);
-
-    // 4. Bottom #FrameInGoa Banner Pill
-    const pillW = 600;
-    const pillH = 90;
-    const pillX = (1080 - pillW) / 2;
-    const pillY = 920;
-
-    ctx.fillStyle = '#003816';
-    ctx.strokeStyle = '#E1FE00';
-    ctx.lineWidth = 4;
-    drawRoundedRect(ctx, pillX, pillY, pillW, pillH, 45, true, true);
-
-    ctx.fillStyle = '#E1FE00';
-    ctx.font = '900 38px "JetBrains Mono", monospace';
-    ctx.textAlign = 'center';
-    ctx.fillText('#FrameInGoa 🌴', 1080 / 2, pillY + 58);
-    ctx.textAlign = 'left'; // Reset
-
-    // 5. Top Right Badge Stamp
-    ctx.fillStyle = '#E1FE00';
-    drawRoundedRect(ctx, 760, 60, 260, 50, 8, true, false);
-    ctx.fillStyle = '#000000';
-    ctx.font = '900 18px "JetBrains Mono", monospace';
-    ctx.fillText('HH GOA 2026', 820, 92);
+    ctx.restore();
   }
 
-  // ----------------------------------------------------
-  // UTILITY CANVAS MATH & EXPORT HELPERS
-  // ----------------------------------------------------
+  /**
+   * FORMAT C: X / TWITTER BANNER (1500x500 - Bright Goa Beach Theme)
+   */
+  function renderFormatC_Banner() {
+    const w = 1500;
+    const h = 500;
 
-  function createPlaceholderAvatar() {
-    const tempCanvas = document.createElement('canvas');
-    tempCanvas.width = 400;
-    tempCanvas.height = 400;
-    const tCtx = tempCanvas.getContext('2d');
+    ctx.clearRect(0, 0, w, h);
+    ctx.save();
 
-    tCtx.fillStyle = '#121E16';
-    tCtx.fillRect(0, 0, 400, 400);
-
-    tCtx.fillStyle = '#E1FE00';
-    tCtx.font = '900 120px "Inter", sans-serif';
-    tCtx.textAlign = 'center';
-    tCtx.textBaseline = 'middle';
-    tCtx.fillText('HH', 200, 200);
-
-    const img = new Image();
-    img.onload = () => {
-      state.uploadedImage = img;
-      renderCanvas();
-    };
-    img.src = tempCanvas.toDataURL();
-  }
-
-  function drawCenterCropImage(ctx, img, x, y, w, h) {
-    const imgRatio = img.width / img.height;
-    const targetRatio = w / h;
-
-    let sourceX = 0, sourceY = 0, sourceW = img.width, sourceH = img.height;
-
-    if (imgRatio > targetRatio) {
-      sourceW = img.height * targetRatio;
-      sourceX = (img.width - sourceW) / 2;
+    // 1. Draw Base Background (Beach Theme image)
+    if (bgImg.complete && bgImg.naturalWidth > 0) {
+      const imgRatio = bgImg.naturalWidth / bgImg.naturalHeight;
+      const canvasRatio = w / h;
+      let drawW = w;
+      let drawH = h;
+      let drawX = 0;
+      let drawY = 0;
+      
+      if (imgRatio > canvasRatio) {
+        drawW = h * imgRatio;
+        drawX = (w - drawW) / 2;
+      } else {
+        drawH = w / imgRatio;
+        drawY = (h - drawH) / 2;
+      }
+      ctx.drawImage(bgImg, drawX, drawY, drawW, drawH);
     } else {
-      sourceH = img.width / targetRatio;
-      sourceY = (img.height - sourceH) / 2;
+      ctx.fillStyle = '#0B3C2D';
+      ctx.fillRect(0, 0, w, h);
     }
 
-    ctx.drawImage(img, sourceX, sourceY, sourceW, sourceH, x, y, w, h);
-  }
-
-  function drawHalftoneImage(ctx, img, dx, dy, dw, dh) {
-    // Create an offscreen canvas to perform pixel analysis
-    const tempCanvas = document.createElement('canvas');
-    tempCanvas.width = dw;
-    tempCanvas.height = dh;
-    const tempCtx = tempCanvas.getContext('2d');
-
-    // Draw the image centered and cropped into the offscreen canvas
-    drawCenterCropImage(tempCtx, img, 0, 0, dw, dh);
-
-    // Fill output destination with pure white base
-    ctx.fillStyle = '#F7F7F7';
-    ctx.fillRect(dx, dy, dw, dh);
-
-    // Get the image data
-    let imgData;
-    try {
-      imgData = tempCtx.getImageData(0, 0, dw, dh);
-    } catch (e) {
-      // Fallback in case of CORS or other canvas security issues
-      ctx.drawImage(img, dx, dy, dw, dh);
-      return;
+    // 2. Pink Torn Paper Footer (Bottom 100px)
+    const footerY = 400;
+    
+    ctx.fillStyle = '#FF007F';
+    ctx.beginPath();
+    ctx.moveTo(0, h);
+    ctx.lineTo(0, footerY);
+    
+    const segments = 60;
+    const segW = w / segments;
+    for (let i = 0; i <= segments; i++) {
+      const x = i * segW;
+      const randY = footerY - 5 + (Math.sin(i * 18.5) * 8) + (Math.cos(i * 9.1) * 6);
+      ctx.lineTo(x, randY);
     }
+    ctx.lineTo(w, footerY);
+    ctx.lineTo(w, h);
+    ctx.closePath();
+    ctx.fill();
 
-    const data = imgData.data;
-    const dotSpacing = 6;
-    ctx.fillStyle = '#0E2418'; // Match background color for high-contrast B&W look
+    // Footer Text
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = '900 36px "Cabinet Grotesk", "Space Grotesk", sans-serif';
+    ctx.fillText('#FrameInGoa', 60, 455);
+    
+    ctx.font = '700 18px "Space Grotesk", sans-serif';
+    ctx.fillText('GOA, INDIA • 2026', 330, 458);
 
-    for (let y = dotSpacing / 2; y < dh; y += dotSpacing) {
-      for (let x = dotSpacing / 2; x < dw; x += dotSpacing) {
-        let sumLuminance = 0;
-        let count = 0;
+    // Footer QR Code
+    const qrSize = 80;
+    const qrX = w - qrSize - 60;
+    const qrY = 410;
+    
+    ctx.fillStyle = '#FFFFFF';
+    drawRoundedRect(ctx, qrX, qrY, qrSize, qrSize, 12, true, false);
 
-        const startX = Math.max(0, Math.floor(x - dotSpacing / 2));
-        const endX = Math.min(dw, Math.floor(x + dotSpacing / 2));
-        const startY = Math.max(0, Math.floor(y - dotSpacing / 2));
-        const endY = Math.min(dh, Math.floor(y + dotSpacing / 2));
+    ctx.save();
+    ctx.fillStyle = '#0B3C2D';
+    const drawAnchor = (ax, ay) => {
+      ctx.fillRect(ax, ay, 12, 12);
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(ax + 2, ay + 2, 8, 8);
+      ctx.fillStyle = '#0B3C2D';
+      ctx.fillRect(ax + 4, ay + 4, 4, 4);
+    };
 
-        for (let sy = startY; sy < endY; sy++) {
-          for (let sx = startX; sx < endX; sx++) {
-            const idx = (sy * dw + sx) * 4;
-            const r = data[idx];
-            const g = data[idx + 1];
-            const b = data[idx + 2];
-            const lum = 0.299 * r + 0.587 * g + 0.114 * b;
-            sumLuminance += lum;
-            count++;
+    drawAnchor(qrX + 8, qrY + 8);
+    drawAnchor(qrX + qrSize - 20, qrY + 8);
+    drawAnchor(qrX + 8, qrY + qrSize - 20);
+
+    let seed = 42;
+    if(state.name) { for (let i = 0; i < state.name.length; i++) { seed += state.name.charCodeAt(i); } }
+    const qrRandom = () => { const x = Math.sin(seed++) * 10000; return x - Math.floor(x); };
+
+    const moduleSize = 4;
+    for (let px = qrX + 8; px < qrX + qrSize - 8; px += moduleSize) {
+      for (let py = qrY + 8; py < qrY + qrSize - 8; py += moduleSize) {
+        const inTopLeft = (px < qrX + 24 && py < qrY + 24);
+        const inTopRight = (px > qrX + qrSize - 24 && py < qrY + 24);
+        const inBottomLeft = (px < qrX + 24 && py > qrY + qrSize - 24);
+        
+        if (!inTopLeft && !inTopRight && !inBottomLeft) {
+          if (qrRandom() > 0.5) {
+            ctx.fillRect(px, py, moduleSize, moduleSize);
           }
         }
-
-        const avgLuminance = count > 0 ? sumLuminance / count : 255;
-        let intensity = 1 - (avgLuminance / 255);
-
-        // Enhance contrast for halftone effect
-        intensity = Math.pow(intensity, 1.5) * 1.3;
-        intensity = Math.min(1, Math.max(0, intensity));
-
-        if (intensity > 0.05) {
-          const maxRadius = (dotSpacing * Math.sqrt(2)) / 2 * 0.9;
-          const radius = intensity * maxRadius;
-          ctx.beginPath();
-          ctx.arc(dx + x, dy + y, radius, 0, Math.PI * 2);
-          ctx.fill();
-        }
       }
     }
-  }
-
-  /**
-   * Step 2: Procedural PCB / Circuit Lines Pattern (Edges Only)
-   */
-  function drawPCBCircuitLines(ctx, w, h) {
-    ctx.save();
-
-    // 1. Line style: Very thin (1px), #7CFF4F at 12% opacity
-    ctx.strokeStyle = 'rgba(124, 255, 79, 0.12)';
-    ctx.lineWidth = 1;
-
-    // Traces strictly along perimeter edges, leaving center clean
-    const traces = [
-      // Top-Left Edge Trace
-      {
-        path: [
-          { x: 30, y: 50 },
-          { x: 200, y: 50 },
-          { x: 240, y: 90 },
-          { x: 240, y: 160 }
-        ],
-        nodes: [
-          { x: 200, y: 50 },
-          { x: 240, y: 160 }
-        ]
-      },
-      // Top-Right Corner Trace
-      {
-        path: [
-          { x: 620, y: 40 },
-          { x: 800, y: 40 },
-          { x: 840, y: 80 },
-          { x: 840, y: 220 }
-        ],
-        nodes: [
-          { x: 620, y: 40 },
-          { x: 800, y: 40 },
-          { x: 840, y: 220 }
-        ]
-      },
-      // Top-Center Edge Accent
-      {
-        path: [
-          { x: 340, y: 25 },
-          { x: 560, y: 25 }
-        ],
-        nodes: [
-          { x: 450, y: 25 }
-        ]
-      },
-      // Right Mid-Edge Trace
-      {
-        path: [
-          { x: 865, y: 280 },
-          { x: 865, y: 480 },
-          { x: 835, y: 510 },
-          { x: 835, y: 640 }
-        ],
-        nodes: [
-          { x: 865, y: 280 },
-          { x: 835, y: 640 }
-        ]
-      },
-      // Bottom-Right Edge Trace
-      {
-        path: [
-          { x: 630, y: 750 },
-          { x: 630, y: 980 },
-          { x: 850, y: 980 },
-          { x: 850, y: 1040 }
-        ],
-        nodes: [
-          { x: 630, y: 750 },
-          { x: 850, y: 1040 }
-        ]
-      },
-      // Bottom-Center Edge Trace
-      {
-        path: [
-          { x: 320, y: 1160 },
-          { x: 580, y: 1160 },
-          { x: 620, y: 1120 },
-          { x: 740, y: 1120 }
-        ],
-        nodes: [
-          { x: 320, y: 1160 },
-          { x: 580, y: 1160 },
-          { x: 740, y: 1120 }
-        ]
-      },
-      // Bottom-Left Accent Trace
-      {
-        path: [
-          { x: 130, y: 1040 },
-          { x: 240, y: 1040 },
-          { x: 280, y: 1080 },
-          { x: 310, y: 1080 }
-        ],
-        nodes: [
-          { x: 130, y: 1040 },
-          { x: 240, y: 1040 },
-          { x: 310, y: 1080 }
-        ]
-      },
-      // Left Mid-Edge Trace
-      {
-        path: [
-          { x: 35, y: 220 },
-          { x: 35, y: 440 },
-          { x: 65, y: 470 },
-          { x: 65, y: 620 }
-        ],
-        nodes: [
-          { x: 35, y: 220 },
-          { x: 65, y: 620 }
-        ]
-      },
-      // Left Lower Edge Trace
-      {
-        path: [
-          { x: 45, y: 680 },
-          { x: 45, y: 860 },
-          { x: 75, y: 890 },
-          { x: 75, y: 970 }
-        ],
-        nodes: [
-          { x: 45, y: 680 },
-          { x: 75, y: 970 }
-        ]
-      }
-    ];
-
-    // 2. Render Lines
-    traces.forEach(t => {
-      if (t.path.length > 1) {
-        ctx.beginPath();
-        ctx.moveTo(t.path[0].x, t.path[0].y);
-        for (let i = 1; i < t.path.length; i++) {
-          ctx.lineTo(t.path[i].x, t.path[i].y);
-        }
-        ctx.stroke();
-      }
-    });
-
-    // 3. Render Glowing Node Dots
-    traces.forEach(t => {
-      t.nodes.forEach(node => {
-        // Outer Glowing Halo
-        ctx.save();
-        ctx.shadowColor = '#7CFF4F';
-        ctx.shadowBlur = 10;
-        ctx.fillStyle = 'rgba(124, 255, 79, 0.3)';
-        ctx.beginPath();
-        ctx.arc(node.x, node.y, 8, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
-
-        // Inner Core Dot (4px)
-        ctx.fillStyle = '#7CFF4F';
-        ctx.beginPath();
-        ctx.arc(node.x, node.y, 4, 0, Math.PI * 2);
-        ctx.fill();
-      });
-    });
-
     ctx.restore();
-  }
 
-  /**
-   * Step 3: Left Vertical Strip Renderer
-   * Width: 120px
-   * Main Vertical Text: HACKER HOUSE (#F4D83A, Bebas Neue / Anton, 8px letter spacing)
-   * Small GOA Text near bottom
-   */
-  function drawLeftVerticalStrip(ctx, w, h) {
+    // 3. Photo Frame (Left)
+    const photoX = 60;
+    const photoY = 40;
+    const photoW = 240;
+    const photoH = 320;
+    
     ctx.save();
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.15)';
+    ctx.shadowBlur = 15;
+    ctx.shadowOffsetY = 8;
+    ctx.fillStyle = '#FFFFFF';
+    drawRoundedRect(ctx, photoX, photoY, photoW, photoH, 20, true, false);
+    ctx.restore();
 
-    const stripWidth = 120;
-
-    // 1. Dark Strip Panel Background Fill (much lighter so the bg image shows through)
-    ctx.fillStyle = 'rgba(4, 14, 9, 0.2)';
-    ctx.fillRect(0, 0, stripWidth, h);
-
-    // 2. Right Vertical Separator Border Line (Accent)
-    ctx.strokeStyle = 'rgba(124, 255, 79, 0.25)';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(stripWidth, 0);
-    ctx.lineTo(stripWidth, h);
-    ctx.stroke();
-
-    // Subtle Inner Accent Line
-    ctx.strokeStyle = '#F4D83A';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(stripWidth - 4, 0);
-    ctx.lineTo(stripWidth - 4, h);
-    ctx.stroke();
-
-    // 3. Main Vertical Text: HACKER HOUSE (Stretched vertically)
     ctx.save();
-    ctx.translate(72, 600);
-    ctx.rotate(-Math.PI / 2); // Rotated vertically upwards
+    clipRoundedRect(ctx, photoX + 6, photoY + 6, photoW - 12, photoH - 12, 16);
+    if (state.uploadedImage) {
+      drawInteractiveImage(ctx, state.uploadedImage, photoX + 6, photoY + 6, photoW - 12, photoH - 12, state.zoom, state.panX, state.panY);
+    } else {
+      ctx.fillStyle = '#F2F542';
+      ctx.fillRect(photoX + 6, photoY + 6, photoW - 12, photoH - 12);
+      ctx.fillStyle = '#0B3C2D';
+      ctx.font = '900 20px "Cabinet Grotesk", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('PHOTO', photoX + photoW / 2, photoY + photoH / 2);
+    }
+    ctx.restore();
 
-    ctx.fillStyle = '#F4D83A';
-    ctx.font = '900 110px "Bebas Neue", "Anton", sans-serif';
+    // Small 3:4 tag
+    ctx.fillStyle = '#F2F542';
+    drawRoundedRect(ctx, photoX + photoW - 50, photoY + photoH - 35, 40, 25, 6, true, false);
+    ctx.fillStyle = '#0B3C2D';
+    ctx.font = '900 12px "Space Grotesk", sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
+    ctx.fillText('3:4', photoX + photoW - 30, photoY + photoH - 22);
 
-    if ('letterSpacing' in ctx) {
-      ctx.letterSpacing = '40px';
-      ctx.fillText('HACKER HOUSE', 0, 0);
-    } else {
-      drawTextWithSpacing(ctx, 'HACKER HOUSE', 0, 0, 40);
-    }
-    ctx.restore();
+    // 4. Middle Left: Name, Role, Title Cards
+    const cardX = 330;
+    const cardW = 380;
+    const cardH = 92;
+    
+    const drawInfoCard = (y, label, value, valueColor) => {
+      ctx.save();
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
+      ctx.shadowBlur = 10;
+      ctx.shadowOffsetY = 4;
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+      drawRoundedRect(ctx, cardX, y, cardW, cardH, 16, true, false);
+      ctx.restore();
 
-    ctx.restore();
-  }
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'alphabetic';
+      ctx.fillStyle = '#6B7280';
+      ctx.font = '800 12px "Space Grotesk", sans-serif';
+      ctx.fillText(label, cardX + 20, y + 30);
 
-  function drawTextWithSpacing(ctx, text, x, y, letterSpacing) {
-    const characters = text.split('');
-    let totalWidth = 0;
+      ctx.fillStyle = valueColor;
+      ctx.font = '900 32px "Cabinet Grotesk", "Space Grotesk", sans-serif';
+      ctx.fillText(value, cardX + 20, y + 72);
+    };
 
-    characters.forEach(char => {
-      totalWidth += ctx.measureText(char).width + letterSpacing;
-    });
-    totalWidth -= letterSpacing;
+    drawInfoCard(40, 'BUILDER NAME', state.name, '#0B3C2D');
+    drawInfoCard(154, 'ROLE / STACK', state.role, '#FF007F');
+    drawInfoCard(268, 'BUILDER TITLE', state.title, '#0B3C2D');
 
-    let currentX = x - totalWidth / 2;
-    characters.forEach(char => {
-      const charWidth = ctx.measureText(char).width;
-      ctx.fillText(char, currentX + charWidth / 2, y);
-      currentX += charWidth + letterSpacing;
-    });
-  }
-
-  function fillTextWithDynamicSize(ctx, text, x, y, maxW, baseFont, letterSpacing = 0) {
+    // 5. Middle Right: Team & Tech Stack
+    const rightX = 740;
+    const rightW = 600;
+    
+    // Squad / Team Bar
     ctx.save();
-    const sizeMatch = baseFont.match(/(\d+)px/);
-    let fontSize = sizeMatch ? parseInt(sizeMatch[1]) : 16;
-    
-    let currentFont = baseFont;
-    ctx.font = currentFont;
-    
-    function getWidth() {
-      if (letterSpacing > 0) {
-        const chars = text.split('');
-        let w = 0;
-        chars.forEach(c => {
-          w += ctx.measureText(c).width + letterSpacing;
-        });
-        return w - letterSpacing;
-      }
-      return ctx.measureText(text).width;
-    }
-
-    while (getWidth() > maxW && fontSize > 12) {
-      fontSize -= 1;
-      currentFont = baseFont.replace(/\d+px/, `${fontSize}px`);
-      ctx.font = currentFont;
-    }
-
-    if (letterSpacing > 0) {
-      if ('letterSpacing' in ctx) {
-        ctx.letterSpacing = `${letterSpacing}px`;
-        ctx.fillText(text, x, y);
-      } else {
-        drawTextWithSpacing(ctx, text, x, y, letterSpacing);
-      }
-    } else {
-      ctx.fillText(text, x, y);
-    }
-    
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
+    ctx.shadowBlur = 10;
+    ctx.shadowOffsetY = 4;
+    ctx.fillStyle = '#F2F542';
+    drawRoundedRect(ctx, rightX, 40, rightW, 110, 20, true, false);
     ctx.restore();
+
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#0B3C2D';
+    ctx.font = '800 14px "Space Grotesk", sans-serif';
+    ctx.fillText('SQUAD / TEAM', rightX + 25, 75);
+    
+    ctx.font = '900 42px "Cabinet Grotesk", "Space Grotesk", sans-serif';
+    if (state.team) {
+      ctx.fillText(state.team, rightX + 23, 125);
+    }
+
+    // Date Pill
+    ctx.fillStyle = '#0B3C2D';
+    drawRoundedRect(ctx, rightX + rightW - 160, 65, 135, 45, 16, true, false);
+    ctx.fillStyle = '#F2F542';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = '900 16px "Space Grotesk", sans-serif';
+    ctx.fillText('OCT 28-31', rightX + rightW - 92, 88);
+
+    // Tech Stack Bar
+    const stackY = 175;
+    ctx.save();
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
+    ctx.shadowBlur = 10;
+    ctx.shadowOffsetY = 4;
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+    drawRoundedRect(ctx, rightX, stackY, rightW, 185, 20, true, false);
+    ctx.restore();
+
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillStyle = '#6B7280';
+    ctx.font = '800 14px "Space Grotesk", sans-serif';
+    ctx.fillText('TECH STACK', rightX + 25, stackY + 35);
+
+    const skillList = state.skills ? state.skills.split(',').map(s => s.trim()).filter(s => s.length > 0) : [];
+    let currentPillX = rightX + 25;
+    let currentPillY = stackY + 55;
+    const pillH = 40;
+
+    skillList.forEach(skill => {
+      ctx.font = '800 16px "Space Grotesk", sans-serif';
+      const textW = ctx.measureText(skill).width;
+      const pillW = textW + 30;
+      
+      if (currentPillX + pillW > rightX + rightW - 25) {
+        currentPillX = rightX + 25;
+        currentPillY += pillH + 12;
+      }
+      
+      if (currentPillY + pillH > stackY + 175) return;
+
+      ctx.fillStyle = '#0B3C2D';
+      drawRoundedRect(ctx, currentPillX, currentPillY, pillW, pillH, 12, true, false);
+
+      ctx.fillStyle = '#F2F542';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(skill, currentPillX + pillW / 2, currentPillY + pillH / 2);
+
+      currentPillX += pillW + 12;
+    });
+
+    // 6. Pink Goa Sticker (Top Right edge)
+    ctx.save();
+    ctx.translate(w - 70, 70);
+    ctx.rotate(15 * Math.PI / 180);
+    
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
+    ctx.shadowBlur = 10;
+    ctx.shadowOffsetY = 4;
+    
+    ctx.fillStyle = '#FF007F';
+    drawRoundedRect(ctx, -50, -25, 100, 50, 16, true, false);
+    
+    ctx.shadowColor = 'transparent';
+    ctx.fillStyle = '#F2F542';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = '900 24px "Noto Sans Devanagari", sans-serif';
+    ctx.fillText('गोवा', 0, 2);
+    ctx.restore();
+
+    ctx.restore();
+  }
+
+  // ----------------------------------------------------
+  // DRAW UTILITIES
+  // ----------------------------------------------------
+
+  function drawInteractiveImage(ctx, img, targetX, targetY, targetW, targetH, zoom, panX, panY) {
+    const imgRatio = img.width / img.height;
+    const targetRatio = targetW / targetH;
+
+    let baseW, baseH;
+    if (imgRatio > targetRatio) {
+      baseH = targetH;
+      baseW = targetH * imgRatio;
+    } else {
+      baseW = targetW;
+      baseH = targetW / imgRatio;
+    }
+
+    // Add a tiny 2% overscan to prevent edge gaps
+    const scaledW = baseW * zoom * 1.02;
+    const scaledH = baseH * zoom * 1.02;
+
+    const drawX = targetX + (targetW - scaledW) / 2 + panX;
+    const drawY = targetY + (targetH - scaledH) / 2 + panY;
+
+    ctx.drawImage(img, drawX, drawY, scaledW, scaledH);
   }
 
   function drawRoundedRect(ctx, x, y, width, height, radius, fill = true, stroke = true) {
@@ -1443,109 +1099,23 @@ function initApp() {
     ctx.clip();
   }
 
-  function truncateText(text, maxLength) {
-    return text.length > maxLength ? text.substring(0, maxLength - 1) + '…' : text;
-  }
-
   function downloadCanvasImage() {
-    showLoading('Saving Image...');
-
-    // Small delay so the loading overlay renders before we block the thread
+    showLoading('Saving High-Res PNG...');
     setTimeout(() => {
       try {
-        // Strategy: scale up the already-rendered onscreen canvas.
-        // This avoids any re-render and is immune to tainted-canvas issues
-        // caused by file:// protocol restrictions on cross-origin images.
-        const hdScale = 3;
-        const hdCanvas = document.createElement('canvas');
         const liveCanvas = document.getElementById('outputCanvas');
-        hdCanvas.width  = liveCanvas.width  * hdScale;
-        hdCanvas.height = liveCanvas.height * hdScale;
-        const hdCtx = hdCanvas.getContext('2d');
-
-        // Disable smoothing for crisp pixel output, then draw scaled
-        hdCtx.imageSmoothingEnabled = true;
-        hdCtx.imageSmoothingQuality = 'high';
-        hdCtx.drawImage(liveCanvas, 0, 0, hdCanvas.width, hdCanvas.height);
-
-        // Use toBlob() instead of toDataURL() — it's more reliable and
-        // avoids the giant base64 string that can cause memory issues.
-        hdCanvas.toBlob((blob) => {
+        const formatLabel = state.format === 'formatB' ? 'IDCard' : state.format === 'formatA' ? 'PFP' : 'Banner';
+        liveCanvas.toBlob((blob) => {
           if (blob) {
-            triggerDownload(blob, `HHGoa2026_${state.format}_HD.png`);
-          } else {
-            // toBlob returned null — canvas may be tainted
-            console.warn('HD toBlob returned null, falling back to 1x download');
-            tryDownloadLiveCanvas();
+            triggerDownload(blob, `HHGoa2026_${formatLabel}.png`);
           }
           hideLoading();
         }, 'image/png', 1.0);
-
-      } catch (hdErr) {
-        console.warn('HD export failed, falling back to 1x download:', hdErr);
-        // Fallback: try direct export from the live canvas
-        tryDownloadLiveCanvas();
+      } catch (err) {
+        console.error('Download error:', err);
+        hideLoading();
       }
-    }, 80);
-  }
-
-  function tryDownloadLiveCanvas() {
-    try {
-      const liveCanvas = document.getElementById('outputCanvas');
-      liveCanvas.toBlob((blob) => {
-        if (blob) {
-          triggerDownload(blob, `HHGoa2026_${state.format}.png`);
-        } else {
-          // Still null — canvas is tainted. Try last-resort: redraw without external images.
-          console.warn('Direct toBlob returned null, using last-resort fallback');
-          fallbackDownloadWithoutImages();
-        }
-        hideLoading();
-      }, 'image/png', 1.0);
-    } catch (fallbackErr) {
-      console.error('Fallback download also failed:', fallbackErr);
-      // Last resort: build a fresh canvas from scratch without any external images
-      fallbackDownloadWithoutImages();
-    }
-  }
-
-  /**
-   * Last-resort download: re-render the design on a fresh canvas WITHOUT any
-   * external images (logo, background) so the canvas can never be tainted.
-   * This guarantees a download even on strict file:// URLs.
-   */
-  function fallbackDownloadWithoutImages() {
-    try {
-      const fallbackCanvas = document.createElement('canvas');
-      const liveCanvas = document.getElementById('outputCanvas');
-      fallbackCanvas.width = liveCanvas.width;
-      fallbackCanvas.height = liveCanvas.height;
-      const fCtx = fallbackCanvas.getContext('2d');
-
-      // Re-render the current format onto the fresh canvas
-      // (renderCanvas uses the global ctx, so save/restore around it)
-      const originalCtx = ctx;
-      // Temporarily redirect context
-      ctx = fCtx;
-      // Reset noise pattern so it re-creates on the new context
-      noisePattern = null;
-      renderCanvas();
-      // Restore original context
-      ctx = originalCtx;
-
-      fallbackCanvas.toBlob((blob) => {
-        if (blob) {
-          triggerDownload(blob, `HHGoa2026_${state.format}_fallback.png`);
-        } else {
-          alert('Download blocked by browser security.\n\nOpen the page via a local server (e.g. "Live Server" VS Code extension) instead of a file:// URL to enable image exports.');
-        }
-        hideLoading();
-      }, 'image/png', 1.0);
-    } catch (err) {
-      console.error('Last-resort fallback failed:', err);
-      alert('Download blocked by browser security.\n\nOpen the page via a local server (e.g. "Live Server" VS Code extension) instead of a file:// URL to enable image exports.');
-      hideLoading();
-    }
+    }, 100);
   }
 
   function triggerDownload(blob, filename) {
@@ -1555,7 +1125,6 @@ function initApp() {
     link.href = url;
     document.body.appendChild(link);
     link.click();
-    // Small delay before removal & revoke to ensure the click registers
     setTimeout(() => {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
@@ -1563,148 +1132,21 @@ function initApp() {
   }
 
   function shareToXIntent() {
+    const formatName = state.format === 'formatB' ? 'Builder ID Card' : state.format === 'formatA' ? 'PFP Overlay' : 'X Banner';
+    const nameTag = state.name ? ` by ${state.name}` : '';
     const shareText = encodeURIComponent(
-      `Building for Hacker House Goa 2026! 🌴\nFormat: ${state.format === 'formatB' ? 'Builder ID Card' : 'PFP Overlay'}\nLess Noise. More Signal.\n\n#FrameInGoa @HackerHouseGoa`
+      `Just generated my HH Goa 2026 ${formatName}${nameTag} 🌴\nBuilding with Team ProofLabs!\n\n#FrameInGoa #HackerHouseGoa\nhhgoa.com`
     );
-    const intentUrl = `https://twitter.com/intent/tweet?text=${shareText}`;
-    window.open(intentUrl, '_blank');
+    window.open(`https://twitter.com/intent/tweet?text=${shareText}`, '_blank');
   }
 
   function showLoading(text) {
-    loadingText.textContent = text;
-    loadingOverlay.classList.remove('hidden');
+    if (loadingText) loadingText.textContent = text;
+    if (loadingOverlay) loadingOverlay.classList.remove('hidden');
   }
 
   function hideLoading() {
-    loadingOverlay.classList.add('hidden');
-  }
-
-  function drawHousePalmLogo(ctx, x, y, size) {
-    ctx.save();
-    ctx.strokeStyle = '#67FF5E';
-    ctx.lineWidth = 3.5;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-
-    // Glow effect
-    ctx.shadowColor = 'rgba(103, 255, 94, 0.6)';
-    ctx.shadowBlur = 12;
-
-    // Draw House
-    ctx.beginPath();
-    // Roof
-    ctx.moveTo(x + size * 0.1, y + size * 0.45);
-    ctx.lineTo(x + size * 0.5, y + size * 0.1);
-    ctx.lineTo(x + size * 0.9, y + size * 0.45);
-
-    // Left wall
-    ctx.moveTo(x + size * 0.18, y + size * 0.45);
-    ctx.lineTo(x + size * 0.18, y + size * 0.95);
-    // Floor
-    ctx.lineTo(x + size * 0.82, y + size * 0.95);
-    // Right wall
-    ctx.lineTo(x + size * 0.82, y + size * 0.45);
-    ctx.stroke();
-
-    // Draw Palm Tree inside
-    ctx.strokeStyle = '#67FF5E';
-    ctx.lineWidth = 2.5;
-
-    // Trunk
-    ctx.beginPath();
-    ctx.moveTo(x + size * 0.54, y + size * 0.95);
-    ctx.quadraticCurveTo(x + size * 0.53, y + size * 0.72, x + size * 0.48, y + size * 0.52);
-    ctx.stroke();
-
-    // Leaves (Fronds)
-    const tx = x + size * 0.48;
-    const ty = y + size * 0.52;
-
-    ctx.beginPath();
-    // Leaf 1: top-left
-    ctx.moveTo(tx, ty);
-    ctx.quadraticCurveTo(tx - 16, ty - 8, tx - 18, ty + 2);
-
-    // Leaf 2: mid-left
-    ctx.moveTo(tx, ty);
-    ctx.quadraticCurveTo(tx - 18, ty + 4, tx - 14, ty + 12);
-
-    // Leaf 3: top-right
-    ctx.moveTo(tx, ty);
-    ctx.quadraticCurveTo(tx + 16, ty - 8, tx + 18, ty + 2);
-
-    // Leaf 4: mid-right
-    ctx.moveTo(tx, ty);
-    ctx.quadraticCurveTo(tx + 18, ty + 4, tx + 14, ty + 12);
-
-    // Leaf 5: top-center
-    ctx.moveTo(tx, ty);
-    ctx.quadraticCurveTo(tx, ty - 16, tx - 4, ty - 13);
-    ctx.stroke();
-
-    // Tiny sand mound at the bottom
-    ctx.beginPath();
-    ctx.arc(x + size * 0.56, y + size * 0.95, 8, Math.PI, 0);
-    ctx.stroke();
-
-    ctx.restore();
-  }
-
-  function drawTinyPalmTree(ctx, x, y) {
-    ctx.save();
-    ctx.strokeStyle = '#C8FF33';
-    ctx.lineWidth = 1.5;
-    ctx.lineCap = 'round';
-
-    // Trunk
-    ctx.beginPath();
-    ctx.moveTo(x + 5, y + 12);
-    ctx.quadraticCurveTo(x + 5, y + 6, x + 3, y + 2);
-    ctx.stroke();
-
-    // Leaves
-    ctx.beginPath();
-    ctx.moveTo(x + 3, y + 2); ctx.quadraticCurveTo(x - 2, y + 1, x - 4, y + 5);
-    ctx.moveTo(x + 3, y + 2); ctx.quadraticCurveTo(x + 2, y - 2, x + 1, y - 4);
-    ctx.moveTo(x + 3, y + 2); ctx.quadraticCurveTo(x + 8, y + 1, x + 10, y + 5);
-    ctx.stroke();
-    ctx.restore();
-  }
-
-  function drawStickerPalmTree(ctx, x, y) {
-    ctx.save();
-    ctx.strokeStyle = '#67FF5E';
-    ctx.lineWidth = 3;
-    ctx.lineCap = 'round';
-    ctx.shadowColor = 'rgba(103, 255, 94, 0.5)';
-    ctx.shadowBlur = 8;
-
-    // Trunk
-    ctx.beginPath();
-    ctx.moveTo(x, y + 35);
-    ctx.quadraticCurveTo(x - 5, y + 15, x - 12, y);
-    ctx.stroke();
-
-    // Leaves
-    const tx = x - 12;
-    const ty = y;
-
-    ctx.beginPath();
-    // Left leaf
-    ctx.moveTo(tx, ty);
-    ctx.quadraticCurveTo(tx - 15, ty - 5, tx - 18, ty + 8);
-    // Top-left leaf
-    ctx.moveTo(tx, ty);
-    ctx.quadraticCurveTo(tx - 10, ty - 15, tx - 2, ty - 18);
-    // Top-right leaf
-    ctx.moveTo(tx, ty);
-    ctx.quadraticCurveTo(tx + 10, ty - 15, tx + 14, ty - 6);
-    // Right leaf
-    ctx.moveTo(tx, ty);
-    ctx.quadraticCurveTo(tx + 15, ty - 2, tx + 12, ty + 12);
-    ctx.stroke();
-
-    ctx.restore();
+    if (loadingOverlay) loadingOverlay.classList.add('hidden');
   }
 }
 

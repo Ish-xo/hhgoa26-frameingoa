@@ -241,6 +241,14 @@ function initStrokeText(container, options = {}) {
   } else {
     setTimeout(measure, 100);
   }
+
+  // Re-measure on container resize (responsive layout)
+  if (typeof ResizeObserver !== 'undefined') {
+    const ro = new ResizeObserver(() => {
+      requestAnimationFrame(measure);
+    });
+    ro.observe(container);
+  }
 }
 
 // Auto-initialize when target element exists
