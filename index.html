@@ -6,20 +6,34 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Hacker House Goa 2026 — #FrameInGoa Generator</title>
   <meta name="description"
-    content="Official Builder ID & PFP Overlay Generator for Hacker House Goa 2026. Less Noise. More Signal.">
+    content="Official Builder ID, PFP Overlay & X Banner Generator for Hacker House Goa 2026. Less Noise. More Signal. Create your #FrameInGoa graphic.">
+
+  <!-- Open Graph / Social Sharing -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Hacker House Goa 2026 — #FrameInGoa Generator">
+  <meta property="og:description" content="Generate your Builder ID Card or PFP Overlay for HH Goa 2026. Less Noise. More Signal. #FrameInGoa">
+  <meta property="og:image" content="assets/navlogo.png">
+  <meta property="og:url" content="https://framingoa.vercel.app">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="#FrameInGoa — HH Goa 2026 Builder Studio">
+  <meta name="twitter:description" content="Build your HH Goa 2026 graphic. Less Noise. More Signal.">
+  <meta name="twitter:image" content="assets/navlogo.png">
+
   <link rel="icon" type="image/png" href="assets/navlogo.png">
 
-  <!-- Google Fonts: Inter, JetBrains Mono & Noto Sans Devanagari -->
+  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
-    href="https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Fira+Code:wght@400;600;700&family=Inter:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;700;800&family=Noto+Sans+Devanagari:wght@700;900&family=Space+Grotesk:wght@400;700&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Fira+Code:wght@400;600;700&family=Inter:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;700;800&family=Noto+Sans+Devanagari:wght@700;900&family=Space+Grotesk:wght@400;700;800;900&display=swap"
     rel="stylesheet">
+  <link href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@800,900&display=swap" rel="stylesheet">
 
-  <!-- CSS Stylesheet -->
   <link rel="stylesheet" href="styles.css">
 
-  <!-- GSAP for Shuffle Text Animation -->
+  <!-- GSAP for Shuffle & Stroke Text Animations -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
   <!-- heic2any Library for iPhone HEIC File Conversion -->
   <script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
@@ -29,9 +43,8 @@
   <!-- Top Navigation Bar -->
   <nav class="top-navbar">
     <div class="nav-container">
-      <!-- Left Corner: Event Logo & Brand Text touching left edge -->
-      <a href=" " rel="noopener noreferrer" class="nav-brand" aria-label="Hacker House Goa 2026 Official Site"
-        title="Hacker House Goa 2026">
+      <a href="https://hhgoa.com" target="_blank" rel="noopener noreferrer" class="nav-brand"
+        aria-label="Hacker House Goa 2026 Official Site">
         <img src="assets/logo.svg" alt="Hacker House Goa 2026 Logo" class="nav-logo">
         <div class="nav-brand-text">
           <span class="nav-brand-title">#FrameInGoa | ProofLabs</span>
@@ -39,27 +52,20 @@
         </div>
       </a>
 
-      <!-- Middle: Check Here & Follow Us on X Links -->
       <div class="nav-center-links">
-        <a href="https://hhgoa.com" target="_blank" rel="noopener noreferrer" class="nav-center-item"
-          title="Official Site: hhgoa.com">
+        <a href="https://hhgoa.com" target="_blank" rel="noopener noreferrer" class="nav-center-item" title="Official Site: hhgoa.com">
+          <svg class="nav-center-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
           <span>HHGoa.com</span>
         </a>
 
-        <a href="https://x.com/247pmstudio" target="_blank" rel="noopener noreferrer" class="nav-center-item"
-          title="Follow Us on X (@247pmstudio)">
-          <span>@247pmstudio on -</span>
-          <svg class="nav-center-icon" viewBox="0 0 24 24" fill="currentColor">
-            <path
-              d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-          </svg>
+        <a href="https://x.com/247pmstudio" target="_blank" rel="noopener noreferrer" class="nav-center-item" title="Follow Us on X (@247pmstudio)">
+          <svg class="nav-center-icon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          <span>@247pmstudio</span>
         </a>
       </div>
 
-      <!-- Right Corner: Apply Button -->
       <div class="nav-right-container">
-        <a href="https://hacker-house-goa-2026.devfolio.co/overview" target="_blank" rel="noopener noreferrer"
-          class="nav-apply-btn" title="Apply for Hacker House Goa 2026">
+        <a href="https://hacker-house-goa-2026.devfolio.co/overview" target="_blank" rel="noopener noreferrer" class="nav-apply-btn" title="Apply for Hacker House Goa 2026">
           <img src="assets/apply.png" alt="Apply Now" class="nav-apply-img">
         </a>
       </div>
@@ -67,31 +73,35 @@
   </nav>
 
   <div class="app-container">
-    <!-- Header Section: Animated Shuffle Hero Text -->
+    <!-- Animated Hero Header -->
     <header class="main-header">
-      <div class="badge-pill">OFFICIAL BUILDER STUDIO · BY PROOFLABS</div>
       <div class="hero-text-container">
         <div class="stroke-hero-title"></div>
-        <p class="brand-subtitle shuffle-hero-sub" data-text="GOA, INDIA · 28 - 31 OCT 2026">GOA, INDIA · 28 - 31 OCT
-          2026</p>
+        <p class="brand-subtitle shuffle-hero-sub" data-text="GOA, INDIA · 28 - 31 OCT 2026">GOA, INDIA · 28 - 31 OCT 2026</p>
       </div>
     </header>
 
-    <!-- Studio Layout -->
+    <!-- Studio Grid -->
     <main class="studio-grid">
       <!-- Controls Panel -->
       <section class="panel controls-panel">
-        <h2 class="panel-title">1. Format & Builder Data</h2>
+        <h2 class="panel-title">
+          <span class="panel-title-num">01</span>
+          Format &amp; Builder Data
+        </h2>
 
         <!-- Format Selector -->
         <div class="form-group">
           <label class="form-label">Select Output Format</label>
           <div class="format-toggle-group">
-            <button type="button" class="btn-toggle active" id="btnFormatB" data-format="formatB">
-              <span class="toggle-icon">💳</span> Builder ID Card
+            <button type="button" class="btn-toggle active" id="btnFormatB">
+              <span>💳</span> ID Card
             </button>
-            <button type="button" class="btn-toggle" id="btnFormatA" data-format="formatA">
-              <span class="toggle-icon">🖼️</span> PFP Overlay
+            <button type="button" class="btn-toggle" id="btnFormatA">
+              <span>⭕</span> PFP
+            </button>
+            <button type="button" class="btn-toggle" id="btnFormatC">
+              <span>🏞️</span> Banner
             </button>
           </div>
         </div>
@@ -105,8 +115,8 @@
               <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" />
               </svg>
-              <p class="drop-text">Drag & drop your photo or <span>browse</span></p>
-              <p class="drop-subtext">Supports iPhone HEIC, PNG & JPG (Auto-Cropped)</p>
+              <p class="drop-text">Drag &amp; drop photo or <span>browse</span></p>
+              <p class="drop-subtext">iPhone HEIC, PNG &amp; JPG supported</p>
             </div>
             <div class="file-info hidden" id="fileInfo">
               <span class="file-name" id="fileName">photo.jpg</span>
@@ -115,53 +125,80 @@
           </div>
         </div>
 
-        <!-- ID Card Details (Dynamic Controls) -->
+        <!-- Photo Adjustment Slider (Inline) -->
+        <div class="form-group photo-adjust-group hidden" id="photoAdjust">
+          <label class="form-label">
+            Photo Zoom &amp; Position
+            <span class="form-label-hint">scroll to zoom · drag to pan</span>
+          </label>
+          <div class="zoom-control-row">
+            <input type="range" id="photoZoom" min="1" max="3" step="0.01" value="1" class="zoom-slider">
+            <button type="button" id="btnResetPhoto" class="btn-reset-photo" title="Reset zoom & position">↺</button>
+          </div>
+        </div>
+
+        <!-- Inputs visible for ALL formats so user can edit Name, Role, Skills, Team, Title -->
         <div id="idCardInputs">
           <div class="form-group">
             <label for="inputName" class="form-label">Builder Name</label>
-            <input type="text" id="inputName" class="form-input" placeholder="e.g. NIKHIL K." value="Nikhil K.">
+            <input type="text" id="inputName" class="form-input" placeholder="e.g. NIKHIL K." autocomplete="off">
           </div>
 
           <div class="form-row">
             <div class="form-group">
-              <label for="inputRole" class="form-label">Role</label>
-              <input type="text" id="inputRole" class="form-input" placeholder="e.g. Full-Stack Developer"
-                value="Full-Stack Developer">
+              <label for="inputRole" class="form-label">Role / Stack</label>
+              <input type="text" id="inputRole" class="form-input" placeholder="e.g. Full-Stack Dev" autocomplete="off">
             </div>
             <div class="form-group">
-              <label for="inputSkills" class="form-label">Skills (Comma-separated)</label>
-              <input type="text" id="inputSkills" class="form-input" placeholder="e.g. React, AI/ML, Web3"
-                value="React, AI/ML, Web3">
+              <label for="inputSkills" class="form-label">Skills (Comma-sep)</label>
+              <input type="text" id="inputSkills" class="form-input" placeholder="e.g. React, AI/ML, Web3" autocomplete="off">
             </div>
           </div>
 
-          <div class="form-group">
-            <label for="inputTeam" class="form-label">Team</label>
-            <input type="text" id="inputTeam" class="form-input" placeholder="e.g. CodeNomads" value="CodeNomads">
-          </div>
-
-          <div class="form-group">
-            <label for="inputTitle" class="form-label">Title</label>
-            <div style="display: flex; gap: 0.5rem; align-items: center; width: 100%;">
-              <input type="text" id="inputTitle" class="form-input" style="flex: 1; min-width: 0;"
-                placeholder="e.g. Pixel Pirate" value="Pixel Pirate">
-              <button type="button" id="btnRandomTitle" class="btn-action"
-                style="width: 44px; height: 44px; padding: 0; margin: 0; background: var(--color-brand-green); color: var(--color-neon-yellow); border: 1px solid var(--color-neon-yellow); box-shadow: none; font-size: 1.2rem; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; shrink: 0;"
-                title="Randomize Title">🎲</button>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="inputTeam" class="form-label">Team</label>
+              <input type="text" id="inputTeam" class="form-input" placeholder="e.g. ProofLabs" autocomplete="off">
             </div>
+            <div class="form-group">
+              <label for="inputTitle" class="form-label">Builder Title</label>
+              <div class="title-input-row">
+                <input type="text" id="inputTitle" class="form-input" placeholder="e.g. Pixel Pirate" autocomplete="off">
+                <button type="button" id="btnRandomTitle" class="btn-roll" title="Randomize Title">🎲</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Inputs specific to PFP Format -->
+        <div id="pfpInputs" class="hidden">
+          <div class="form-group">
+            <label class="form-label">Border Thickness</label>
+            <input type="range" id="pfpBorderThickness" min="2" max="25" step="1" value="10" class="zoom-slider">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Border Padding</label>
+            <input type="range" id="pfpBorderPadding" min="0" max="40" step="1" value="16" class="zoom-slider">
           </div>
         </div>
       </section>
 
       <!-- Canvas Preview & Actions Panel -->
       <section class="panel preview-panel">
-        <h2 class="panel-title">2. Live Preview</h2>
+        <h2 class="panel-title">
+          <span class="panel-title-num">02</span>
+          Live Graphic Preview
+        </h2>
 
-        <div class="canvas-wrapper">
+        <div class="canvas-wrapper" id="canvasWrapper" data-format="formatB">
           <canvas id="outputCanvas" width="900" height="1200"></canvas>
           <div class="loading-overlay hidden" id="loadingOverlay">
             <div class="spinner"></div>
-            <p id="loadingText">Processing photo...</p>
+            <p id="loadingText">Processing graphic...</p>
+          </div>
+          <div class="canvas-hint hidden" id="canvasHint">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 8 12 12 14 14"/></svg>
+            Scroll to zoom · Drag to reposition
           </div>
         </div>
 
@@ -171,13 +208,12 @@
             <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
             </svg>
-            Download Graphic (.PNG)
+            Download HD (.PNG)
           </button>
 
           <button type="button" class="btn-action btn-share" id="btnShareX">
             <svg class="btn-icon" viewBox="0 0 24 24" fill="currentColor">
-              <path
-                d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
             </svg>
             Share to X (#FrameInGoa)
           </button>
@@ -186,8 +222,8 @@
     </main>
 
     <footer class="main-footer">
-      <div class="footer-left" style="display: flex; align-items: center; gap: 0.6rem;">
-        <img src="assets/navlogo.png" alt="Hacker House Logo" style="height: 24px;">
+      <div class="footer-left">
+        <img src="assets/navlogo.png" alt="Hacker House Logo" style="height: 22px; opacity:0.8;">
         <span>Team ProofLabs. All rights reserved.</span>
       </div>
       <div class="footer-right">

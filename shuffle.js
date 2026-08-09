@@ -14,7 +14,9 @@ function initShuffle(element, options = {}) {
     animationMode: 'evenodd', // 'evenodd' or 'random'
     stagger: 0.03,
     scrambleCharset: 'X01#$&%*+<>{}[]~',
-    triggerOnHover: true
+    triggerOnHover: true,
+    loop: false,
+    loopDelay: 3000
   };
 
   const config = { ...defaults, ...options };
@@ -154,6 +156,9 @@ function initShuffle(element, options = {}) {
     const tl = gsap.timeline({
       onComplete: () => {
         isPlaying = false;
+        if (config.loop) {
+          setTimeout(buildAndPlay, config.loopDelay);
+        }
       }
     });
 
@@ -226,7 +231,9 @@ function initAllShuffle() {
       shuffleTimes: 2,
       ease: 'power3.out',
       stagger: 0.02,
-      triggerOnHover: true
+      triggerOnHover: true,
+      loop: true,
+      loopDelay: 4000
     });
   }
 }

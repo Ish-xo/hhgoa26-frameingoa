@@ -41,40 +41,37 @@ The visual aesthetic strictly adheres to the official Hacker House Goa 2026 bran
 
 ## 📐 Output Formats
 
-The application powers two client-side rendering engines using HTML5 Canvas:
+The application powers **three** client-side rendering engines using HTML5 Canvas:
 
 ```
-                  ┌─────────────────────────────────────────┐
-                  │          USER PHOTO UPLOAD              │
-                  │   (.jpg, .png, .heic via heic2any)      │
-                  └────────────────────┬────────────────────┘
-                                       │
-                    ┌──────────────────┴──────────────────┐
-                    ▼                                     ▼
-         ╔═══════════════════════╗             ╔═══════════════════════╗
-         ║       FORMAT A        ║             ║       FORMAT B        ║
-         ║   PFP Frame Overlay   ║             ║   Builder ID Badge    ║
-         ╚═══════════════════════╝             ╚═══════════════════════╝
-         • Circular & Square frames            • Event Dates (28-31 Oct)
-         • X Profile optimized                 • Name, Role & Tech Stack
-         • Preserves portrait focus            • Dynamic "Builder Class"
-         • Branded border & badge              • Unique Serial & Batch ID
+         ┌──────────────────────────────────────────────────────┐
+         │                  USER PHOTO UPLOAD                  │
+         │          (.jpg, .png, .heic via heic2any)            │
+         └──────────────┬──────────────────┬───────────────────┘
+                        │                  │                  │
+                        ▼                  ▼                  ▼
+              ╔════════════════╗  ╔════════════════╗  ╔════════════════╗
+              ║   FORMAT A     ║  ║   FORMAT B     ║  ║   FORMAT C     ║
+              ║  PFP Overlay   ║  ║  Builder ID    ║  ║   X Banner     ║
+              ╚════════════════╝  ╚════════════════╝  ╚════════════════╝
+              1080×1080px         900×1200px           1500×500px
 ```
 
-### 1. Format A: PFP Frame / Overlay
+### 1. Format A: PFP Frame / Overlay (1080×1080)
 - **Purpose**: Ready-to-use X (Twitter) profile picture overlay.
-- **Features**: Circular and square frame options, dynamic scaling, high-resolution canvas output (`1080x1080`).
+- **Features**: Full-bleed user photo, neon yellow border frame, branded `#FrameInGoa` pill badge, `HH GOA 2026` stamp.
 
-### 2. Format B: Builder ID Card
+### 2. Format B: Builder ID Card (900×1200)
 - **Purpose**: Digital event credentials & builder passport.
 - **Rendered Fields**:
-  - **Header**: `HH GOA 2026` | `28 – 31 OCT 2026` | `GOA, INDIA`
-  - **User Data**: Cropped Photo + Badge Stamp, Full Name, Primary Role, Tech Stack.
-  - **Dynamic Generated Attributes**:
-    - **Builder Class**: (e.g., *Pixel Pirate*, *Protocol Architect*, *Kernel Runner*)
-    - **Batch Status**: `ALPHA // FIRST WAVE`
-    - **Serial Badge**: `#034 / 247`
-  - **Footer**: Embedded `#FrameInGoa` & *"LESS NOISE. MORE SIGNAL."* slogan.
+  - **Header**: `HACKER HOUSE GOA` branding + procedural logo + गोवा sticker
+  - **User Data**: Cropped Photo + Verified Badge, Full Name, Primary Role, Tech Stack pills.
+  - **Dynamic Attributes**: Random builder title, unique serial `#HHG-2026-XXXX`, procedural barcode, QR code
+  - **Footer**: `#FrameInGoa`, `hhgoa.com`, serial verification ID
+
+### 3. Format C: X / Twitter Header Banner (1500×500)
+- **Purpose**: Profile header / social banner for X (Twitter) — a unique differentiator.
+- **Features**: HH Goa branding, गोवा sticker, event date badge, circular avatar (when photo uploaded), builder name/role/title, `#FrameInGoa` tag.
 
 ---
 
@@ -97,14 +94,18 @@ The application powers two client-side rendering engines using HTML5 Canvas:
 
 ---
 
-## 📁 Repository Structure Blueprint
+## 📁 Repository Structure
 
 ```
-hh-goa-2026-frame-generator/
-├── README.md        # Comprehensive project blueprint & team documentation
+hhgoa26-frameingoa/
+├── README.md        # Project blueprint & team documentation
 ├── index.html       # Web application DOM layout & UI structure
 ├── styles.css       # Custom design system (#003816 green, #E1FE00 neon yellow)
-└── script.js        # HTML5 Canvas rendering engine, photo upload & X share intent
+├── script.js        # HTML5 Canvas rendering engine (3 formats)
+├── shuffle.js       # GSAP-powered hero text shuffle animation
+├── stroke-text.js   # SVG stroke-draw text animation
+├── vercel.json      # Vercel static deployment config
+└── assets/          # Logos, background images, UI assets
 ```
 
 ---
@@ -112,20 +113,35 @@ hh-goa-2026-frame-generator/
 ## 🚀 Quickstart for Team Members
 
 ### Prerequisites
-- Any modern web browser (Google Chrome, Mozilla Firefox, Apple Safari, Microsoft Edge).
-- Optional: A lightweight HTTP server like VS Code Live Server or `npx serve`.
+- Any modern web browser (Google Chrome, Firefox, Safari, Edge).
+- [Vercel CLI](https://vercel.com/cli) for deployment (optional).
 
-### Local Setup Instructions
+### Local Development
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/your-team/hh-goa-2026-frame-generator.git
-cd hh-goa-2026-frame-generator
+git clone https://github.com/ProofLabs/hhgoa26-frameingoa.git
+cd hhgoa26-frameingoa
 
-# 2. Open directly in your browser or run a local dev server
+# 2. Run a local dev server
 npx serve .
-# OR simply open index.html directly in your web browser!
+# Access at: http://localhost:3000
 ```
+
+### Deploy to Vercel
+
+```bash
+# Install Vercel CLI
+npm i -g vercel
+
+# Deploy (first time — follow prompts)
+vercel
+
+# Subsequent deploys
+vercel --prod
+```
+
+> The `vercel.json` config is already included. Just `vercel --prod` to ship.
 
 ---
 
@@ -135,24 +151,29 @@ This submission is evaluated under **Stage 1 — Open Trials** of the Hacker Hou
 
 ### 📋 Hard Submission Requirements
 
-- [ ] **Functional Web App**: Client-side Next.js app rendering Format A & Format B graphics seamlessly.
-- [ ] **HEIC iPhone Support**: Verified working upload for native Apple photos via `heic2any`.
-- [ ] **Instant Download & Social Intent**: Direct high-res `.png` download + X Web Intent pre-filled with `#FrameInGoa`.
-- [ ] **Official Submission Form**: Submitted via Google Form before **11:59 PM, 13th August 2026** ([Submission Form Link](https://forms.gle/jM5hTaGvsrfEfixPA)).
-- [ ] **Team Member Verification (All-or-Nothing Rule)**: Every team member (1 to 3 members) must independently post their generated badge/PFP graphic on X using `#FrameInGoa`.
+- [ ] **Live URL**: Deployed to Vercel at `https://framingoa.vercel.app` ✅
+- [ ] **3 Output Formats**: ID Card (900×1200), PFP Overlay (1080×1080), X Banner (1500×500) ✅
+- [ ] **HEIC iPhone Support**: Verified working upload for native Apple photos via `heic2any` ✅
+- [ ] **Instant Download**: High-res 3× scaled `.png` download, no loading screen ✅
+- [ ] **Share to X**: Tweet intent pre-filled with `#FrameInGoa #HackerHouseGoa` + `hhgoa.com` ✅
+- [ ] **HHGOA Branding**: `#003816` green, `#E1FE00` neon yellow, official logo, `गोवा` sticker ✅
+- [ ] **Official Submission Form**: Submit before **11:59 PM, Aug 13 2026** ([Form Link](https://forms.gle/jM5hTaGvsrfEfixPA))
+- [ ] **Team Posts**: Every team member posts their generated graphic on X with `#FrameInGoa`
 
 ### 🛡️ Evaluation Signals Addressed
-- **Proof of Building**: Shipped repo, clean code modularity, zero filler dependencies.
-- **UI/UX Excellence**: Ultra-polished cyberpunk dark mode UI matching Hacker House Goa 2026 brand colors (`#003816`, `#E1FE00`).
-- **Edge Case Rigor**: Handles weird aspect ratio crops, oversized files, and mobile safari rendering efficiently.
+- **Proof of Building**: Hand-coded canvas engine, zero AI-generated art, original design
+- **UI/UX Excellence**: Modern dark glassmorphism UI, pulsing action buttons, scanline effects
+- **HHGOA Brand Compliance**: Deep green `#003816` + neon yellow `#E1FE00` throughout
+- **Edge Case Rigor**: HEIC support, drag-crop modal, responsive layout, fallback downloads
 
 ---
 
 ## 👥 Team & Credits
 
+- **Team**: **ProofLabs**
 - **Event**: Hacker House Goa 2026 (Oct 28–31, 2026 | Goa, India)
 - **Hashtag**: `#FrameInGoa`
 - **Motto**: *"LESS NOISE. MORE SIGNAL."*
 
 ---
-*Created for Hacker House Goa 2026 Shortlisting Task — Open Trials Stage 1.*
+*Built by Team ProofLabs for Hacker House Goa 2026 Shortlisting Task — Open Trials Stage 1.*
