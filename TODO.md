@@ -6,4 +6,4 @@
 - [x] Rewrite `downloadCanvasImage()` to use `toBlob()` + `URL.createObjectURL()` instead of `toDataURL()`
 - [x] Add robust fallback download if the canvas is still tainted
 - [x] Restore background image preview (bgImg loads directly with crossOrigin='anonymous')
-- [ ] Test download functionality
+- [x] Test download functionality
