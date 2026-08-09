@@ -5,7 +5,6 @@
  */
 
 function initApp() {
-  // DOM Elements
   const canvas = document.getElementById('outputCanvas');
   const ctx = canvas.getContext('2d');
   const canvasWrapper = document.getElementById('canvasWrapper');
@@ -44,41 +43,33 @@ function initApp() {
   // Preload Logo
   const logoImg = new Image();
   (function loadLogoSafe() {
-    fetch('assets/logo.svg')
-      .then(res => res.blob())
-      .then(blob => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          logoImg.src = reader.result;
-          logoImg.onload = () => renderCanvas();
-        };
-        reader.readAsDataURL(blob);
-      })
-      .catch(() => {
-        logoImg.src = 'assets/logo.svg';
-        logoImg.onload = () => renderCanvas();
-      });
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', 'assets/logo.svg');
+    xhr.responseType = 'blob';
+    xhr.onload = function() {
+      const reader = new FileReader();
+      reader.onloadend = () => { logoImg.src = reader.result; logoImg.onload = () => renderCanvas(); };
+      reader.readAsDataURL(xhr.response);
+    };
+    xhr.onerror = function() { logoImg.src = 'assets/logo.svg'; logoImg.onload = () => renderCanvas(); };
+    xhr.send();
   })();
 
   // Preload Background Image (bg.jpeg)
   const bgImg = new Image();
-  bgImg.crossOrigin = 'anonymous';
   (function loadBgSafe() {
-    fetch('assets/bg.jpeg')
-      .then(res => res.blob())
-      .then(blob => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          bgImg.src = reader.result;
-          bgImg.onload = () => renderCanvas();
-        };
-        reader.readAsDataURL(blob);
-      })
-      .catch(() => {
-        bgImg.src = 'assets/bg.jpeg';
-        bgImg.onload = () => renderCanvas();
-      });
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', 'assets/bg.jpeg');
+    xhr.responseType = 'blob';
+    xhr.onload = function() {
+      const reader = new FileReader();
+      reader.onloadend = () => { bgImg.src = reader.result; bgImg.onload = () => renderCanvas(); };
+      reader.readAsDataURL(xhr.response);
+    };
+    xhr.onerror = function() { bgImg.src = 'assets/bg.jpeg'; bgImg.onload = () => renderCanvas(); };
+    xhr.send();
   })();
+
 
   // Application State
   const state = {
@@ -87,16 +78,23 @@ function initApp() {
     zoom: 1.0,
     panX: 0,
     panY: 0,
-    name: '',
-    role: '',
-    skills: '',
-    team: '',
-    title: '',
+    name: 'Ish Praful Chaniyara',
+    role: 'AI Engineer',
+    skills: 'React, AI/ML, Flutter',
+    team: 'ProofLabs',
+    title: 'Edge Case Wrangler',
     serialNumber: '#HHG-2026-' + String(Math.floor(Math.random() * 9000) + 1000),
     batchStatus: 'ALPHA // FIRST WAVE',
     pfpBorderThickness: 10,
     pfpBorderPadding: 16
   };
+
+  // Sync state values with inputs on load
+  if (inputName) inputName.value = state.name;
+  if (inputRole) inputRole.value = state.role;
+  if (inputSkills) inputSkills.value = state.skills;
+  if (inputTeam) inputTeam.value = state.team;
+  if (inputTitle) inputTitle.value = state.title;
 
   const presetTitles = [
     'Pixel Pirate', 'Protocol Architect', 'Prompt Alchemist', 'Byte Bandit',
@@ -128,9 +126,7 @@ function initApp() {
     });
   }
 
-  // ----------------------------------------------------
   // FORMAT SWITCHING
-  // ----------------------------------------------------
   [btnFormatB, btnFormatA, btnFormatC].forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.preventDefault();
@@ -167,15 +163,13 @@ function initApp() {
     renderCanvas();
   }
 
-  // ----------------------------------------------------
   // LIVE INPUT HANDLERS
-  // ----------------------------------------------------
   inputName.addEventListener('input', (e) => { state.name = e.target.value; renderCanvas(); });
   inputRole.addEventListener('input', (e) => { state.role = e.target.value; renderCanvas(); });
   inputSkills.addEventListener('input', (e) => { state.skills = e.target.value; renderCanvas(); });
   inputTeam.addEventListener('input', (e) => { state.team = e.target.value; renderCanvas(); });
   inputTitle.addEventListener('input', (e) => { state.title = e.target.value; renderCanvas(); });
-  
+
   if (pfpThicknessInput) pfpThicknessInput.addEventListener('input', (e) => { state.pfpBorderThickness = parseInt(e.target.value, 10); renderCanvas(); });
   if (pfpPaddingInput) pfpPaddingInput.addEventListener('input', (e) => { state.pfpBorderPadding = parseInt(e.target.value, 10); renderCanvas(); });
 
@@ -187,9 +181,7 @@ function initApp() {
     renderCanvas();
   });
 
-  // ----------------------------------------------------
   // PHOTO UPLOAD & HEIC CONVERSION
-  // ----------------------------------------------------
   dropzone.addEventListener('click', (e) => {
     if (e.target !== btnRemoveFile) photoInput.click();
   });
@@ -277,9 +269,7 @@ function initApp() {
     }
   }
 
-  // ----------------------------------------------------
   // INTERACTIVE PHOTO ZOOM & PAN ON CANVAS / SLIDER
-  // ----------------------------------------------------
   photoZoomSlider.addEventListener('input', (e) => {
     state.zoom = parseFloat(e.target.value);
     renderCanvas();
@@ -372,35 +362,11 @@ function initApp() {
     renderCanvas();
   }, { passive: false });
 
-  // ----------------------------------------------------
   // EXPORT ACTIONS
-  // ----------------------------------------------------
   btnDownload.addEventListener('click', downloadCanvasImage);
   btnShareX.addEventListener('click', shareToXIntent);
 
-  // ----------------------------------------------------
   // RENDER ENGINE
-  // ----------------------------------------------------
-  function getNoisePattern() {
-    if (noisePattern) return noisePattern;
-    const noiseCanvas = document.createElement('canvas');
-    const size = 128;
-    noiseCanvas.width = size;
-    noiseCanvas.height = size;
-    const nCtx = noiseCanvas.getContext('2d');
-    const imgData = nCtx.createImageData(size, size);
-    for (let i = 0; i < imgData.data.length; i += 4) {
-      const val = Math.floor(Math.random() * 255);
-      imgData.data[i] = val;
-      imgData.data[i + 1] = val;
-      imgData.data[i + 2] = val;
-      imgData.data[i + 3] = 255;
-    }
-    nCtx.putImageData(imgData, 0, 0);
-    noisePattern = ctx.createPattern(noiseCanvas, 'repeat');
-    return noisePattern;
-  }
-
   function renderCanvas() {
     noisePattern = null;
     try {
@@ -423,7 +389,32 @@ function initApp() {
   }
 
   /**
-   * FORMAT B: BUILDER ID CARD (Bright Goa Beach Theme)
+   * Helper function to fit text dynamic font size inside specified max width
+   */
+  function drawAutoFittedText(ctx, text, x, y, maxWidth, baseFontSize, fontFamily, color) {
+    if (!text) return;
+    let fontSize = baseFontSize;
+    ctx.font = `900 ${fontSize}px ${fontFamily}`;
+
+    while (ctx.measureText(text).width > maxWidth && fontSize > 16) {
+      fontSize -= 1;
+      ctx.font = `900 ${fontSize}px ${fontFamily}`;
+    }
+
+    let textToDraw = text;
+    if (ctx.measureText(textToDraw).width > maxWidth) {
+      while (ctx.measureText(textToDraw + '...').width > maxWidth && textToDraw.length > 0) {
+        textToDraw = textToDraw.slice(0, -1);
+      }
+      textToDraw += '...';
+    }
+
+    ctx.fillStyle = color;
+    ctx.fillText(textToDraw, x, y);
+  }
+
+  /**
+   * FORMAT B: BUILDER ID CARD
    */
   function renderFormatB_IDCard() {
     const w = 900;
@@ -434,14 +425,13 @@ function initApp() {
 
     // 1. Draw Base Background (Beach Theme image)
     if (bgImg.complete && bgImg.naturalWidth > 0) {
-      // Draw covered background
       const imgRatio = bgImg.naturalWidth / bgImg.naturalHeight;
       const canvasRatio = w / h;
       let drawW = w;
       let drawH = h;
       let drawX = 0;
       let drawY = 0;
-      
+
       if (imgRatio > canvasRatio) {
         drawW = h * imgRatio;
         drawX = (w - drawW) / 2;
@@ -455,30 +445,30 @@ function initApp() {
       ctx.fillRect(0, 0, w, h);
     }
 
-    // 2. Top Header (HACKER HOUSE GOA 2026)
+    // 2. Top Header
     ctx.textAlign = 'left';
     ctx.textBaseline = 'top';
-    
-    ctx.fillStyle = '#F2F542'; // hh-yellow
+
+    ctx.fillStyle = '#F2F542';
     ctx.font = '900 24px "Cabinet Grotesk", "Space Grotesk", sans-serif';
     ctx.fillText('HACKER HOUSE', 60, 90);
-    
+
     ctx.fillStyle = '#FFFFFF';
     ctx.font = '900 76px "Cabinet Grotesk", "Space Grotesk", sans-serif';
     ctx.fillText('GOA 2026', 58, 120);
 
-    // 3. Pink Goa Sticker (Top Right)
+    // 3. Pink Goa Sticker
     ctx.save();
     ctx.translate(w - 140, 120);
     ctx.rotate(6 * Math.PI / 180);
-    
+
     ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
     ctx.shadowBlur = 10;
     ctx.shadowOffsetY = 4;
-    
-    ctx.fillStyle = '#FF007F'; // hh-pink
+
+    ctx.fillStyle = '#FF007F';
     drawRoundedRect(ctx, -70, -35, 140, 70, 20, true, false);
-    
+
     ctx.shadowColor = 'transparent';
     ctx.fillStyle = '#F2F542';
     ctx.textAlign = 'center';
@@ -487,12 +477,12 @@ function initApp() {
     ctx.fillText('गोवा', 0, 4);
     ctx.restore();
 
-    // 4. Main Content: Photo Frame (Left)
+    // 4. Photo Frame
     const photoX = 60;
     const photoY = 380;
     const photoW = 360;
     const photoH = 480;
-    
+
     ctx.save();
     ctx.shadowColor = 'rgba(0, 0, 0, 0.15)';
     ctx.shadowBlur = 15;
@@ -516,7 +506,7 @@ function initApp() {
     }
     ctx.restore();
 
-    // Small 3:4 tag on photo
+    // 3:4 Tag
     ctx.fillStyle = '#F2F542';
     drawRoundedRect(ctx, photoX + photoW - 70, photoY + photoH - 45, 60, 35, 8, true, false);
     ctx.fillStyle = '#0B3C2D';
@@ -525,11 +515,12 @@ function initApp() {
     ctx.textBaseline = 'middle';
     ctx.fillText('3:4', photoX + photoW - 40, photoY + photoH - 27);
 
-    // 5. Info Cards (Right of Photo)
+    // 5. Info Cards
     const cardX = 440;
     const cardW = 400;
     const cardH = 135;
-    
+    const maxTextWidth = cardW - 50;
+
     const drawInfoCard = (y, label, value, valueColor) => {
       ctx.save();
       ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
@@ -543,11 +534,9 @@ function initApp() {
       ctx.textBaseline = 'alphabetic';
       ctx.fillStyle = '#6B7280';
       ctx.font = '800 16px "Space Grotesk", sans-serif';
-      ctx.fillText(label, cardX + 30, y + 45);
+      ctx.fillText(label, cardX + 25, y + 42);
 
-      ctx.fillStyle = valueColor;
-      ctx.font = '900 42px "Cabinet Grotesk", "Space Grotesk", sans-serif';
-      ctx.fillText(value, cardX + 30, y + 100);
+      drawAutoFittedText(ctx, value, cardX + 25, y + 95, maxTextWidth, 36, '"Cabinet Grotesk", "Space Grotesk", sans-serif', valueColor);
     };
 
     drawInfoCard(380, 'BUILDER NAME', state.name, '#0B3C2D');
@@ -568,10 +557,9 @@ function initApp() {
     ctx.fillStyle = '#0B3C2D';
     ctx.font = '800 18px "Space Grotesk", sans-serif';
     ctx.fillText('SQUAD / TEAM', 100, teamY + 50);
-    
-    ctx.font = '900 58px "Cabinet Grotesk", "Space Grotesk", sans-serif';
+
     if (state.team) {
-      ctx.fillText(state.team, 98, teamY + 115);
+      drawAutoFittedText(ctx, state.team, 98, teamY + 115, 500, 52, '"Cabinet Grotesk", "Space Grotesk", sans-serif', '#0B3C2D');
     }
 
     // Date Pill
@@ -608,7 +596,7 @@ function initApp() {
       ctx.font = '800 20px "Space Grotesk", sans-serif';
       const textW = ctx.measureText(skill).width;
       const pillW = textW + 40;
-      
+
       if (currentPillX + pillW > 820) return;
 
       ctx.fillStyle = '#0B3C2D';
@@ -624,12 +612,12 @@ function initApp() {
 
     // 8. Pink Torn Paper Footer
     const footerY = 1380;
-    
+
     ctx.fillStyle = '#FF007F';
     ctx.beginPath();
     ctx.moveTo(0, h);
     ctx.lineTo(0, footerY);
-    
+
     const segments = 40;
     const segW = w / segments;
     for (let i = 0; i <= segments; i++) {
@@ -648,7 +636,7 @@ function initApp() {
     ctx.fillStyle = '#FFFFFF';
     ctx.font = '900 42px "Cabinet Grotesk", "Space Grotesk", sans-serif';
     ctx.fillText('#FrameInGoa', 60, 1490);
-    
+
     ctx.font = '700 20px "Space Grotesk", sans-serif';
     ctx.fillText('GOA, INDIA • 2026', 64, 1530);
 
@@ -656,7 +644,7 @@ function initApp() {
     const qrSize = 140;
     const qrX = w - qrSize - 60;
     const qrY = 1410;
-    
+
     ctx.fillStyle = '#FFFFFF';
     drawRoundedRect(ctx, qrX, qrY, qrSize, qrSize, 24, true, false);
 
@@ -684,7 +672,7 @@ function initApp() {
         const inTopLeft = (px < qrX + 45 && py < qrY + 45);
         const inTopRight = (px > qrX + qrSize - 45 && py < qrY + 45);
         const inBottomLeft = (px < qrX + 45 && py > qrY + qrSize - 45);
-        
+
         if (!inTopLeft && !inTopRight && !inBottomLeft) {
           if (qrRandom() > 0.5) {
             ctx.fillRect(px, py, moduleSize, moduleSize);
@@ -698,7 +686,7 @@ function initApp() {
   }
 
   /**
-   * FORMAT A: CIRCULAR PFP OVERLAY (1080x1080 - Beach Image Background)
+   * FORMAT A: CIRCULAR PFP OVERLAY
    */
   function renderFormatA_PFPOverlay() {
     const w = 1080;
@@ -710,7 +698,7 @@ function initApp() {
     ctx.clearRect(0, 0, w, h);
     ctx.save();
 
-    // 1. Draw Beach Background Image
+    // Background
     if (bgImg.complete && bgImg.naturalWidth > 0) {
       const imgRatio = bgImg.naturalWidth / bgImg.naturalHeight;
       const canvasRatio = w / h;
@@ -718,7 +706,7 @@ function initApp() {
       let drawH = h;
       let drawX = 0;
       let drawY = 0;
-      
+
       if (imgRatio > canvasRatio) {
         drawW = h * imgRatio;
         drawX = (w - drawW) / 2;
@@ -732,23 +720,23 @@ function initApp() {
       ctx.fillRect(0, 0, w, h);
     }
 
-    // 2. Concentric Colorful Glowing Rings around Photo Circle
+    // Rings
     const thick = state.pfpBorderThickness || 10;
     const pad = state.pfpBorderPadding || 16;
-    
-    ctx.strokeStyle = '#FF007F'; // Pink
+
+    ctx.strokeStyle = '#FF007F';
     ctx.lineWidth = thick * 1.4;
     ctx.beginPath(); ctx.arc(cx, cy, r + pad + (thick * 0.4), 0, Math.PI * 2); ctx.stroke();
 
-    ctx.strokeStyle = '#F2F542'; // Yellow
+    ctx.strokeStyle = '#F2F542';
     ctx.lineWidth = thick;
     ctx.beginPath(); ctx.arc(cx, cy, r + pad - (thick * 0.8), 0, Math.PI * 2); ctx.stroke();
 
-    ctx.strokeStyle = '#FFFFFF'; // White
+    ctx.strokeStyle = '#FFFFFF';
     ctx.lineWidth = thick * 0.6;
     ctx.beginPath(); ctx.arc(cx, cy, r + pad - (thick * 1.8), 0, Math.PI * 2); ctx.stroke();
 
-    // 3. User Photo inside Circle Mask
+    // Photo
     ctx.save();
     ctx.beginPath();
     ctx.arc(cx, cy, r, 0, Math.PI * 2);
@@ -772,7 +760,7 @@ function initApp() {
   }
 
   /**
-   * FORMAT C: X / TWITTER BANNER (1500x500 - Bright Goa Beach Theme)
+   * FORMAT C: X / TWITTER BANNER
    */
   function renderFormatC_Banner() {
     const w = 1500;
@@ -781,7 +769,7 @@ function initApp() {
     ctx.clearRect(0, 0, w, h);
     ctx.save();
 
-    // 1. Draw Base Background (Beach Theme image)
+    // Background
     if (bgImg.complete && bgImg.naturalWidth > 0) {
       const imgRatio = bgImg.naturalWidth / bgImg.naturalHeight;
       const canvasRatio = w / h;
@@ -789,7 +777,7 @@ function initApp() {
       let drawH = h;
       let drawX = 0;
       let drawY = 0;
-      
+
       if (imgRatio > canvasRatio) {
         drawW = h * imgRatio;
         drawX = (w - drawW) / 2;
@@ -803,14 +791,14 @@ function initApp() {
       ctx.fillRect(0, 0, w, h);
     }
 
-    // 2. Pink Torn Paper Footer (Bottom 100px)
+    // Torn Paper Footer
     const footerY = 400;
-    
+
     ctx.fillStyle = '#FF007F';
     ctx.beginPath();
     ctx.moveTo(0, h);
     ctx.lineTo(0, footerY);
-    
+
     const segments = 60;
     const segW = w / segments;
     for (let i = 0; i <= segments; i++) {
@@ -829,15 +817,15 @@ function initApp() {
     ctx.fillStyle = '#FFFFFF';
     ctx.font = '900 36px "Cabinet Grotesk", "Space Grotesk", sans-serif';
     ctx.fillText('#FrameInGoa', 60, 455);
-    
+
     ctx.font = '700 18px "Space Grotesk", sans-serif';
     ctx.fillText('GOA, INDIA • 2026', 330, 458);
 
-    // Footer QR Code
+    // QR Code
     const qrSize = 80;
     const qrX = w - qrSize - 60;
     const qrY = 410;
-    
+
     ctx.fillStyle = '#FFFFFF';
     drawRoundedRect(ctx, qrX, qrY, qrSize, qrSize, 12, true, false);
 
@@ -856,7 +844,7 @@ function initApp() {
     drawAnchor(qrX + 8, qrY + qrSize - 20);
 
     let seed = 42;
-    if(state.name) { for (let i = 0; i < state.name.length; i++) { seed += state.name.charCodeAt(i); } }
+    if (state.name) { for (let i = 0; i < state.name.length; i++) { seed += state.name.charCodeAt(i); } }
     const qrRandom = () => { const x = Math.sin(seed++) * 10000; return x - Math.floor(x); };
 
     const moduleSize = 4;
@@ -865,7 +853,7 @@ function initApp() {
         const inTopLeft = (px < qrX + 24 && py < qrY + 24);
         const inTopRight = (px > qrX + qrSize - 24 && py < qrY + 24);
         const inBottomLeft = (px < qrX + 24 && py > qrY + qrSize - 24);
-        
+
         if (!inTopLeft && !inTopRight && !inBottomLeft) {
           if (qrRandom() > 0.5) {
             ctx.fillRect(px, py, moduleSize, moduleSize);
@@ -875,12 +863,12 @@ function initApp() {
     }
     ctx.restore();
 
-    // 3. Photo Frame (Left)
+    // Photo Frame
     const photoX = 60;
     const photoY = 40;
     const photoW = 240;
     const photoH = 320;
-    
+
     ctx.save();
     ctx.shadowColor = 'rgba(0, 0, 0, 0.15)';
     ctx.shadowBlur = 15;
@@ -904,20 +892,12 @@ function initApp() {
     }
     ctx.restore();
 
-    // Small 3:4 tag
-    ctx.fillStyle = '#F2F542';
-    drawRoundedRect(ctx, photoX + photoW - 50, photoY + photoH - 35, 40, 25, 6, true, false);
-    ctx.fillStyle = '#0B3C2D';
-    ctx.font = '900 12px "Space Grotesk", sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('3:4', photoX + photoW - 30, photoY + photoH - 22);
-
-    // 4. Middle Left: Name, Role, Title Cards
+    // Middle Left Cards
     const cardX = 330;
     const cardW = 380;
     const cardH = 92;
-    
+    const maxTextWidth = cardW - 40;
+
     const drawInfoCard = (y, label, value, valueColor) => {
       ctx.save();
       ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
@@ -933,20 +913,17 @@ function initApp() {
       ctx.font = '800 12px "Space Grotesk", sans-serif';
       ctx.fillText(label, cardX + 20, y + 30);
 
-      ctx.fillStyle = valueColor;
-      ctx.font = '900 32px "Cabinet Grotesk", "Space Grotesk", sans-serif';
-      ctx.fillText(value, cardX + 20, y + 72);
+      drawAutoFittedText(ctx, value, cardX + 20, y + 68, maxTextWidth, 28, '"Cabinet Grotesk", "Space Grotesk", sans-serif', valueColor);
     };
 
     drawInfoCard(40, 'BUILDER NAME', state.name, '#0B3C2D');
     drawInfoCard(154, 'ROLE / STACK', state.role, '#FF007F');
     drawInfoCard(268, 'BUILDER TITLE', state.title, '#0B3C2D');
 
-    // 5. Middle Right: Team & Tech Stack
+    // Middle Right: Team & Stack
     const rightX = 740;
     const rightW = 600;
-    
-    // Squad / Team Bar
+
     ctx.save();
     ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
     ctx.shadowBlur = 10;
@@ -959,10 +936,9 @@ function initApp() {
     ctx.fillStyle = '#0B3C2D';
     ctx.font = '800 14px "Space Grotesk", sans-serif';
     ctx.fillText('SQUAD / TEAM', rightX + 25, 75);
-    
-    ctx.font = '900 42px "Cabinet Grotesk", "Space Grotesk", sans-serif';
+
     if (state.team) {
-      ctx.fillText(state.team, rightX + 23, 125);
+      drawAutoFittedText(ctx, state.team, rightX + 23, 125, 380, 36, '"Cabinet Grotesk", "Space Grotesk", sans-serif', '#0B3C2D');
     }
 
     // Date Pill
@@ -999,12 +975,12 @@ function initApp() {
       ctx.font = '800 16px "Space Grotesk", sans-serif';
       const textW = ctx.measureText(skill).width;
       const pillW = textW + 30;
-      
+
       if (currentPillX + pillW > rightX + rightW - 25) {
         currentPillX = rightX + 25;
         currentPillY += pillH + 12;
       }
-      
+
       if (currentPillY + pillH > stackY + 175) return;
 
       ctx.fillStyle = '#0B3C2D';
@@ -1018,18 +994,18 @@ function initApp() {
       currentPillX += pillW + 12;
     });
 
-    // 6. Pink Goa Sticker (Top Right edge)
+    // Sticker
     ctx.save();
     ctx.translate(w - 70, 70);
     ctx.rotate(15 * Math.PI / 180);
-    
+
     ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
     ctx.shadowBlur = 10;
     ctx.shadowOffsetY = 4;
-    
+
     ctx.fillStyle = '#FF007F';
     drawRoundedRect(ctx, -50, -25, 100, 50, 16, true, false);
-    
+
     ctx.shadowColor = 'transparent';
     ctx.fillStyle = '#F2F542';
     ctx.textAlign = 'center';
@@ -1041,10 +1017,7 @@ function initApp() {
     ctx.restore();
   }
 
-  // ----------------------------------------------------
   // DRAW UTILITIES
-  // ----------------------------------------------------
-
   function drawInteractiveImage(ctx, img, targetX, targetY, targetW, targetH, zoom, panX, panY) {
     const imgRatio = img.width / img.height;
     const targetRatio = targetW / targetH;
@@ -1058,7 +1031,6 @@ function initApp() {
       baseH = targetW / imgRatio;
     }
 
-    // Add a tiny 2% overscan to prevent edge gaps
     const scaledW = baseW * zoom * 1.02;
     const scaledH = baseH * zoom * 1.02;
 
@@ -1103,16 +1075,50 @@ function initApp() {
     showLoading('Saving High-Res PNG...');
     setTimeout(() => {
       try {
-        const liveCanvas = document.getElementById('outputCanvas');
+        // Render into a fresh offscreen canvas to avoid SecurityError on tainted canvas
+        const offscreen = document.createElement('canvas');
         const formatLabel = state.format === 'formatB' ? 'IDCard' : state.format === 'formatA' ? 'PFP' : 'Banner';
-        liveCanvas.toBlob((blob) => {
-          if (blob) {
-            triggerDownload(blob, `HHGoa2026_${formatLabel}.png`);
-          }
+        if (state.format === 'formatB') { offscreen.width = 900;  offscreen.height = 1600; }
+        else if (state.format === 'formatA') { offscreen.width = 1080; offscreen.height = 1080; }
+        else { offscreen.width = 1500; offscreen.height = 500; }
+
+        const offCtx = offscreen.getContext('2d');
+        // Swap context temporarily and render
+        const origCtx = canvas.getContext('2d');
+        const origW = canvas.width;
+        const origH = canvas.height;
+
+        // Set canvas to offscreen dimensions and render
+        canvas.width = offscreen.width;
+        canvas.height = offscreen.height;
+        renderCanvas();
+
+        // Copy rendered content to offscreen
+        offCtx.drawImage(canvas, 0, 0);
+
+        // Restore original canvas size and re-render for display
+        canvas.width = origW;
+        canvas.height = origH;
+        renderCanvas();
+
+        offscreen.toBlob((blob) => {
+          if (blob) triggerDownload(blob, `HHGoa2026_${formatLabel}.png`);
           hideLoading();
         }, 'image/png', 1.0);
       } catch (err) {
         console.error('Download error:', err);
+        // Fallback: try direct toDataURL on live canvas
+        try {
+          const liveCanvas = document.getElementById('outputCanvas');
+          const dataURL = liveCanvas.toDataURL('image/png');
+          const link = document.createElement('a');
+          const formatLabel = state.format === 'formatB' ? 'IDCard' : state.format === 'formatA' ? 'PFP' : 'Banner';
+          link.download = `HHGoa2026_${formatLabel}.png`;
+          link.href = dataURL;
+          link.click();
+        } catch (e2) {
+          alert('Download failed. Please open the app via a local server (e.g. Live Server) instead of file://');
+        }
         hideLoading();
       }
     }, 100);
