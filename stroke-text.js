@@ -33,7 +33,7 @@ function initStrokeText(container, options = {}) {
   // Clear existing content
   container.innerHTML = '';
   container.className = `stroke-text ${config.trigger === 'hover' ? 'stroke-text--hover' : ''} ${config.className}`.trim();
-  
+
   if (config.style) {
     Object.assign(container.style, config.style);
   }
