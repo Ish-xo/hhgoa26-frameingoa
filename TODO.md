@@ -1,9 +1,9 @@
-# TODO: Fix "Download Blocked by Browser Security" Error
+# TODO: Add PFP Overlay Option to design.html
 
 ## Steps
-- [x] Fix `logoImg` loading to prevent canvas tainting (use data URL)
-- [x] Fix `bgImg` fallback loading to prevent canvas tainting (use data URL + crossOrigin)
-- [x] Rewrite `downloadCanvasImage()` to use `toBlob()` + `URL.createObjectURL()` instead of `toDataURL()`
-- [x] Add robust fallback download if the canvas is still tainted
-- [x] Restore background image preview (bgImg loads directly with crossOrigin='anonymous')
-- [x] Test download functionality
+- [ ] 1. Add format toggle buttons (Builder ID Card / PFP Overlay) in left panel
+- [ ] 2. Add PFP canvas preview area in right panel (hidden by default)
+- [ ] 3. Wrap existing ID card preview in a toggleable container
+- [ ] 4. Add PFP native renderer JS (1080x1080, borders, banner, badge)
+- [ ] 5. Add PFP download (toBlob) & share-to-X JS
+- [ ] 6. Add toggle logic to switch between ID card and PFP overlay
