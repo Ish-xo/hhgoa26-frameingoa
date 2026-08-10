@@ -153,10 +153,12 @@ body::after {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 60px;
-  padding: 0 1.5rem;
+  flex-wrap: wrap;
+  min-height: 60px;
+  padding: 0.5rem 1.5rem;
   max-width: 1380px;
   margin: 0 auto;
+  gap: 0.25rem;
 }
 
 .nav-brand {
@@ -320,6 +322,7 @@ body::after {
   flex-direction: column;
   align-items: center;
   width: fit-content; /* Hugs the preview card tight without extra padding */
+  max-width: 100%; /* MOBILE: prevent preview panel from overflowing */
   padding: 1.25rem;
 }
 
@@ -644,6 +647,7 @@ body::after {
 .canvas-wrapper {
   position: relative;
   width: 420px; /* Fixed display width keeps card identical size */
+  max-width: 100%; /* MOBILE: prevents overflow beyond parent */
   margin: 0 auto 1.25rem;
   overflow: hidden;
   border-radius: var(--radius-lg);
@@ -657,7 +661,7 @@ body::after {
 
 .canvas-wrapper[data-format="formatB"] { aspect-ratio: 9 / 16; }
 .canvas-wrapper[data-format="formatA"] { aspect-ratio: 1 / 1; }
-.canvas-wrapper[data-format="formatC"] { aspect-ratio: 3 / 1; width: 680px; }
+.canvas-wrapper[data-format="formatC"] { aspect-ratio: 3 / 1; width: 680px; max-width: 100%; }
 
 .canvas-wrapper[data-has-photo="true"] canvas {
   cursor: grab;
@@ -1047,11 +1051,11 @@ canvas {
 
 @media (max-width: 480px) {
   .app-container {
-    padding: 0 1rem 2rem;
+    padding: 0 0.75rem 2rem;
   }
 
   .panel {
-    padding: 1.25rem;
+    padding: 1rem;
   }
 
   .form-row {
@@ -1063,7 +1067,33 @@ canvas {
   }
 
   .nav-container {
-    padding: 0 1rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .nav-brand-title {
+    font-size: 11.5px;
+  }
+
+  .nav-logo {
+    height: 28px;
+  }
+
+  .nav-apply-img {
+    height: 26px;
+  }
+
+  .main-header {
+    padding: 1rem 0.5rem 0.75rem;
+  }
+
+  .main-footer {
+    flex-direction: column;
+    gap: 0.5rem;
+    text-align: center;
+  }
+
+  .footer-right {
+    text-align: center;
   }
 }
 
