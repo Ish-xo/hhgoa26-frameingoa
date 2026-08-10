@@ -1137,11 +1137,11 @@ function initApp() {
     if (!validateFields()) return;
     const formatName = state.format === 'formatB' ? 'Builder ID Card' : state.format === 'formatA' ? 'PFP Overlay' : 'X Banner';
     const nameTag = state.name ? ` by ${state.name}` : '';
-    const teamTag = state.team ? `\\nBuilding with ${state.team}!` : '';
+    const teamTag = state.team ? `\nBuilding with ${state.team}!` : '';
     const shareText = encodeURIComponent(
-      `Just generated my HH Goa 2026 ${formatName}${nameTag} 🌴${teamTag}\\n\\n#FrameInGoa #HackerHouseGoa\\nhhgoa.com`
+      `Just generated my HH Goa 2026 ${formatName}${nameTag} 🌴${teamTag}\n\n#FrameInGoa #HackerHouseGoa\n\nhhgoa.com`
     );
-    window.open(`https://twitter.com/intent/tweet?text=${shareText}`, '_blank');
+    window.open(`https://x.com/intent/tweet?text=${shareText}`, '_blank');
   }
 
   function showLoading(text) {
