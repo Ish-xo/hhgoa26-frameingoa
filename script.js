@@ -78,10 +78,10 @@ function initApp() {
     zoom: 1.0,
     panX: 0,
     panY: 0,
-    name: 'Ish Praful Chaniyara',
-    role: 'AI Engineer',
-    skills: 'React, AI/ML, Flutter',
-    team: 'ProofLabs',
+    name: '', /* Enter your name */
+    role: '', /* Enter your role */
+    skills: '', /* Enter your skills */
+    team: '', /* Enter your team */
     title: 'Edge Case Wrangler',
     serialNumber: '#HHG-2026-' + String(Math.floor(Math.random() * 9000) + 1000),
     batchStatus: 'ALPHA // FIRST WAVE',
@@ -748,7 +748,7 @@ function initApp() {
       ctx.fillStyle = '#051A0D';
       ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
 
-      ctx.fillStyle = '#E1FE00';
+      ctx.fillStyle = '#F2F542';
       ctx.font = '900 30px "JetBrains Mono", monospace';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
@@ -1071,7 +1071,37 @@ function initApp() {
     ctx.clip();
   }
 
+  function validateFields() {
+    let isValid = true;
+    const requiredInputs = [inputName, inputRole, inputSkills, inputTeam, inputTitle];
+    
+    // Clear previous errors
+    requiredInputs.forEach(input => {
+      if(input) input.classList.remove('error-outline');
+    });
+    if(dropzone) dropzone.classList.remove('error-outline');
+
+    if (!state.uploadedImage) {
+      if(dropzone) dropzone.classList.add('error-outline');
+      isValid = false;
+    }
+
+    requiredInputs.forEach(input => {
+      if (input && !input.value.trim()) {
+        input.classList.add('error-outline');
+        isValid = false;
+      }
+    });
+
+    if (!isValid) {
+      alert('Please upload a photo and fill in all required fields (Name, Role, Skills, Team, Title) before exporting.');
+    }
+    
+    return isValid;
+  }
+
   function downloadCanvasImage() {
+    if (!validateFields()) return;
     showLoading('Saving High-Res PNG...');
     setTimeout(() => {
       try {
@@ -1138,10 +1168,12 @@ function initApp() {
   }
 
   function shareToXIntent() {
+    if (!validateFields()) return;
     const formatName = state.format === 'formatB' ? 'Builder ID Card' : state.format === 'formatA' ? 'PFP Overlay' : 'X Banner';
     const nameTag = state.name ? ` by ${state.name}` : '';
+    const teamTag = state.team ? `\\nBuilding with ${state.team}!` : '';
     const shareText = encodeURIComponent(
-      `Just generated my HH Goa 2026 ${formatName}${nameTag} 🌴\nBuilding with Team ProofLabs!\n\n#FrameInGoa #HackerHouseGoa\nhhgoa.com`
+      `Just generated my HH Goa 2026 ${formatName}${nameTag} 🌴${teamTag}\\n\\n#FrameInGoa #HackerHouseGoa\\nhhgoa.com`
     );
     window.open(`https://twitter.com/intent/tweet?text=${shareText}`, '_blank');
   }

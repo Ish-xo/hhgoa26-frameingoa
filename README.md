@@ -3,8 +3,8 @@
 > **Official Shortlisting Task & Builder ID / PFP Overlay Generator**  
 > *"LESS NOISE. MORE SIGNAL."*
 
-![Hacker House Goa 2026 Header](https://img.shields.io/badge/HACKER_HOUSE_GOA-2026-003816?style=for-the-badge&labelColor=000000&color=E1FE00)
-![Stage 1 Open Trials](https://img.shields.io/badge/STAGE_1-OPEN_TRIALS-003816?style=for-the-badge&labelColor=000000&color=E1FE00)
+![Hacker House Goa 2026 Header](https://img.shields.io/badge/HACKER_HOUSE_GOA-2026-0b3c2d?style=for-the-badge&labelColor=000000&color=f2f542)
+![Stage 1 Open Trials](https://img.shields.io/badge/STAGE_1-OPEN_TRIALS-0b3c2d?style=for-the-badge&labelColor=000000&color=f2f542)
 ![Deadline](https://img.shields.io/badge/DEADLINE-AUG_13_2026_11:59PM-ff0055?style=for-the-badge&labelColor=000000)
 
 ---
@@ -40,8 +40,8 @@ The visual aesthetic strictly adheres to the official Hacker House Goa 2026 bran
 
 | Element | Hex / Specs | Preview / Description |
 | :--- | :--- | :--- |
-| **Primary Theme** | `#003816` | **Deep Cyber Green** — Core background & brand identity |
-| **Accent / Highlight**| `#E1FE00` | **Electric Neon Yellow** — Badges, highlights, callouts |
+| **Primary Theme** | `#0b3c2d` | **Forest Green** — Core background & brand identity |
+| **Accent / Highlight**| `#f2f542` | **Neon Yellow** — Badges, highlights, callouts |
 | **Background / Contrast**| `#000000` / `#0D0D0D` | **Obsidian Black** — High contrast structural cards |
 | **Typography** | `Inter`, `JetBrains Mono` | Clean sans-serif headings with high-tech monospace metadata |
 | **Slogan** | *"LESS NOISE. MORE SIGNAL."* | Brand watermark embedded on all generated artifacts |
@@ -109,7 +109,7 @@ The application powers **three** client-side rendering engines using HTML5 Canva
 hhgoa26-frameingoa/
 ├── README.md        # Project blueprint & team documentation
 ├── index.html       # Web application DOM layout & UI structure
-├── styles.css       # Custom design system (#003816 green, #E1FE00 neon yellow)
+├── styles.css       # Custom design system (#0b3c2d green, #f2f542 neon yellow)
 ├── script.js        # HTML5 Canvas rendering engine (3 formats)
 ├── shuffle.js       # GSAP-powered hero text shuffle animation
 ├── stroke-text.js   # SVG stroke-draw text animation
@@ -165,14 +165,14 @@ This submission is evaluated under **Stage 1 — Open Trials** of the Hacker Hou
 - [ ] **HEIC iPhone Support**: Verified working upload for native Apple photos via `heic2any` ✅
 - [ ] **Instant Download**: High-res 3× scaled `.png` download, no loading screen ✅
 - [ ] **Share to X**: Tweet intent pre-filled with `#FrameInGoa #HackerHouseGoa` + `hhgoa.com` ✅
-- [ ] **HHGOA Branding**: `#003816` green, `#E1FE00` neon yellow, official logo, `गोवा` sticker ✅
+- [ ] **HHGOA Branding**: `#0b3c2d` green, `#f2f542` neon yellow, official logo, `गोवा` sticker ✅
 - [ ] **Official Submission Form**: Submit before **11:59 PM, Aug 13 2026** ([Form Link](https://forms.gle/jM5hTaGvsrfEfixPA))
 - [ ] **Team Posts**: Every team member posts their generated graphic on X with `#FrameInGoa`
 
 ### 🛡️ Evaluation Signals Addressed
 - **Proof of Building**: Hand-coded canvas engine, zero AI-generated art, original design
 - **UI/UX Excellence**: Modern dark glassmorphism UI, pulsing action buttons, scanline effects
-- **HHGOA Brand Compliance**: Deep green `#003816` + neon yellow `#E1FE00` throughout
+- **HHGOA Brand Compliance**: Forest green `#0b3c2d` + neon yellow `#f2f542` throughout
 - **Edge Case Rigor**: HEIC support, drag-crop modal, responsive layout, fallback downloads
 
 ---

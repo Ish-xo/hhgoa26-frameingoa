@@ -2,13 +2,13 @@
   <defs>
     <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#002D12"/>
-      <stop offset="50%" stop-color="#003816"/>
+      <stop offset="50%" stop-color="#0b3c2d"/>
       <stop offset="100%" stop-color="#001F0C"/>
     </linearGradient>
     
     <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="0%">
       <stop offset="0%" stop-color="#FCEE21"/>
-      <stop offset="50%" stop-color="#E1FE00"/>
+      <stop offset="50%" stop-color="#f2f542"/>
       <stop offset="100%" stop-color="#D4E400"/>
     </linearGradient>
 
@@ -21,27 +21,27 @@
   <rect width="800" height="450" fill="url(#bgGrad)" rx="16"/>
   
   <!-- Outer Dotted Yellow Border Frame -->
-  <rect x="12" y="12" width="776" height="426" fill="none" stroke="#E1FE00" stroke-width="8" rx="10"/>
-  <rect x="24" y="24" width="752" height="402" fill="none" stroke="#E1FE00" stroke-width="2" stroke-dasharray="6,6" rx="6"/>
+  <rect x="12" y="12" width="776" height="426" fill="none" stroke="#f2f542" stroke-width="8" rx="10"/>
+  <rect x="24" y="24" width="752" height="402" fill="none" stroke="#f2f542" stroke-width="2" stroke-dasharray="6,6" rx="6"/>
 
   <!-- Corner Flourishes (Pink & Yellow) -->
   <!-- Top Left -->
   <path d="M 40 40 Q 90 40 100 90 Q 70 80 40 40 Z" fill="#FF007A"/>
-  <path d="M 40 40 C 120 40 40 120 40 40 Z" fill="none" stroke="#E1FE00" stroke-width="3"/>
-  <circle cx="110" cy="45" r="7" fill="#E1FE00"/>
+  <path d="M 40 40 C 120 40 40 120 40 40 Z" fill="none" stroke="#f2f542" stroke-width="3"/>
+  <circle cx="110" cy="45" r="7" fill="#f2f542"/>
 
   <!-- Top Right -->
   <path d="M 760 40 Q 710 40 700 90 Q 730 80 760 40 Z" fill="#FF007A"/>
-  <path d="M 760 40 C 680 40 760 120 760 40 Z" fill="none" stroke="#E1FE00" stroke-width="3"/>
-  <circle cx="690" cy="45" r="7" fill="#E1FE00"/>
+  <path d="M 760 40 C 680 40 760 120 760 40 Z" fill="none" stroke="#f2f542" stroke-width="3"/>
+  <circle cx="690" cy="45" r="7" fill="#f2f542"/>
 
   <!-- Bottom Left -->
   <path d="M 40 410 Q 90 410 100 360 Q 70 370 40 410 Z" fill="#FF007A"/>
-  <circle cx="110" cy="405" r="7" fill="#E1FE00"/>
+  <circle cx="110" cy="405" r="7" fill="#f2f542"/>
 
   <!-- Bottom Right -->
   <path d="M 760 410 Q 710 410 700 360 Q 730 370 760 410 Z" fill="#FF007A"/>
-  <circle cx="690" cy="405" r="7" fill="#E1FE00"/>
+  <circle cx="690" cy="405" r="7" fill="#f2f542"/>
 
   <!-- Center Ornate Indian Frame Path -->
   <path d="M 400 45 
@@ -64,16 +64,16 @@
            C 213 316, 194 269, 194 225 
            C 194 181, 213 134, 232 102 
            C 290 83, 365 55, 400 55 Z" 
-        fill="none" stroke="#E1FE00" stroke-width="2" stroke-dasharray="4,4"/>
+        fill="none" stroke="#f2f542" stroke-width="2" stroke-dasharray="4,4"/>
 
   <!-- Center Floral Ornaments Left & Right -->
-  <path d="M 240 225 L 265 210 L 265 240 Z" fill="#E1FE00"/>
-  <path d="M 560 225 L 535 210 L 535 240 Z" fill="#E1FE00"/>
+  <path d="M 240 225 L 265 210 L 265 240 Z" fill="#f2f542"/>
+  <path d="M 560 225 L 535 210 L 535 240 Z" fill="#f2f542"/>
 
   <!-- Subtitle Top: GOA, INDIA -->
   <text x="400" y="115" 
         text-anchor="middle" 
-        fill="#E1FE00" 
+        fill="#f2f542" 
         font-family="'JetBrains Mono', monospace" 
         font-weight="700" 
         font-size="22" 
@@ -101,7 +101,7 @@
     <rect x="330" y="202" width="140" height="46" rx="8" fill="#FF007A" stroke="#FFFFFF" stroke-width="2"/>
     <text x="400" y="235" 
           text-anchor="middle" 
-          fill="#E1FE00" 
+          fill="#f2f542" 
           font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" 
           font-weight="900" 
           font-size="28">गोवा</text>
@@ -110,7 +110,7 @@
   <!-- Dates Bottom: 28 - 31 OCT 2026 -->
   <text x="400" y="340" 
         text-anchor="middle" 
-        fill="#E1FE00" 
+        fill="#f2f542" 
         font-family="'JetBrains Mono', monospace" 
         font-weight="700" 
         font-size="24" 
