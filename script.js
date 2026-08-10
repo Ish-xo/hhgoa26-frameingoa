@@ -333,21 +333,23 @@ function initApp() {
   canvasWrapper.addEventListener('touchstart', (e) => {
     if (!state.uploadedImage || e.touches.length !== 1) return;
     if (!isHoveringPhotoArea(e.touches[0].clientX, e.touches[0].clientY)) return;
+    e.preventDefault(); // prevent scroll when touch starts on photo
     isDragging = true;
     startX = e.touches[0].clientX;
     startY = e.touches[0].clientY;
     initialPanX = state.panX;
     initialPanY = state.panY;
-  }, { passive: true });
+  }, { passive: false });
 
   canvasWrapper.addEventListener('touchmove', (e) => {
     if (!isDragging || !state.uploadedImage || e.touches.length !== 1) return;
+    e.preventDefault(); // prevent page scroll while dragging photo
     const dx = (e.touches[0].clientX - startX) * (canvas.width / canvasWrapper.clientWidth);
     const dy = (e.touches[0].clientY - startY) * (canvas.height / canvasWrapper.clientHeight);
     state.panX = initialPanX + dx;
     state.panY = initialPanY + dy;
     renderCanvas();
-  }, { passive: true });
+  }, { passive: false });
 
   canvasWrapper.addEventListener('touchend', () => { isDragging = false; });
 
