@@ -645,40 +645,20 @@ function initApp() {
     const qrX = w - qrSize - 60;
     const qrY = 1410;
 
-    ctx.fillStyle = '#FFFFFF';
-    drawRoundedRect(ctx, qrX, qrY, qrSize, qrSize, 24, true, false);
-
     ctx.save();
-    ctx.fillStyle = '#0B3C2D';
-    const drawAnchor = (ax, ay) => {
-      ctx.fillRect(ax, ay, 24, 24);
-      ctx.fillStyle = '#FFFFFF';
-      ctx.fillRect(ax + 4, ay + 4, 16, 16);
-      ctx.fillStyle = '#0B3C2D';
-      ctx.fillRect(ax + 8, ay + 8, 8, 8);
-    };
+    clipRoundedRect(ctx, qrX, qrY, qrSize, qrSize, 24);
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(qrX, qrY, qrSize, qrSize);
 
-    drawAnchor(qrX + 15, qrY + 15);
-    drawAnchor(qrX + qrSize - 39, qrY + 15);
-    drawAnchor(qrX + 15, qrY + qrSize - 39);
-
-    let seed = 42;
-    for (let i = 0; i < state.name.length; i++) { seed += state.name.charCodeAt(i); }
-    const qrRandom = () => { const x = Math.sin(seed++) * 10000; return x - Math.floor(x); };
-
-    const moduleSize = 4;
-    for (let px = qrX + 15; px < qrX + qrSize - 15; px += moduleSize) {
-      for (let py = qrY + 15; py < qrY + qrSize - 15; py += moduleSize) {
-        const inTopLeft = (px < qrX + 45 && py < qrY + 45);
-        const inTopRight = (px > qrX + qrSize - 45 && py < qrY + 45);
-        const inBottomLeft = (px < qrX + 45 && py > qrY + qrSize - 45);
-
-        if (!inTopLeft && !inTopRight && !inBottomLeft) {
-          if (qrRandom() > 0.5) {
-            ctx.fillRect(px, py, moduleSize, moduleSize);
-          }
-        }
-      }
+    if (window.QRious) {
+      const qr = new QRious({
+        value: 'https://hhgoa26-frameingoa.vercel.app',
+        size: qrSize,
+        background: 'white',
+        foreground: '#0B3C2D',
+        level: 'H'
+      });
+      ctx.drawImage(qr.canvas, qrX, qrY, qrSize, qrSize);
     }
     ctx.restore();
 
@@ -826,40 +806,20 @@ function initApp() {
     const qrX = w - qrSize - 60;
     const qrY = 410;
 
-    ctx.fillStyle = '#FFFFFF';
-    drawRoundedRect(ctx, qrX, qrY, qrSize, qrSize, 12, true, false);
-
     ctx.save();
-    ctx.fillStyle = '#0B3C2D';
-    const drawAnchor = (ax, ay) => {
-      ctx.fillRect(ax, ay, 12, 12);
-      ctx.fillStyle = '#FFFFFF';
-      ctx.fillRect(ax + 2, ay + 2, 8, 8);
-      ctx.fillStyle = '#0B3C2D';
-      ctx.fillRect(ax + 4, ay + 4, 4, 4);
-    };
+    clipRoundedRect(ctx, qrX, qrY, qrSize, qrSize, 12);
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(qrX, qrY, qrSize, qrSize);
 
-    drawAnchor(qrX + 8, qrY + 8);
-    drawAnchor(qrX + qrSize - 20, qrY + 8);
-    drawAnchor(qrX + 8, qrY + qrSize - 20);
-
-    let seed = 42;
-    if (state.name) { for (let i = 0; i < state.name.length; i++) { seed += state.name.charCodeAt(i); } }
-    const qrRandom = () => { const x = Math.sin(seed++) * 10000; return x - Math.floor(x); };
-
-    const moduleSize = 4;
-    for (let px = qrX + 8; px < qrX + qrSize - 8; px += moduleSize) {
-      for (let py = qrY + 8; py < qrY + qrSize - 8; py += moduleSize) {
-        const inTopLeft = (px < qrX + 24 && py < qrY + 24);
-        const inTopRight = (px > qrX + qrSize - 24 && py < qrY + 24);
-        const inBottomLeft = (px < qrX + 24 && py > qrY + qrSize - 24);
-
-        if (!inTopLeft && !inTopRight && !inBottomLeft) {
-          if (qrRandom() > 0.5) {
-            ctx.fillRect(px, py, moduleSize, moduleSize);
-          }
-        }
-      }
+    if (window.QRious) {
+      const qr = new QRious({
+        value: 'https://hhgoa26-frameingoa.vercel.app',
+        size: qrSize,
+        background: 'white',
+        foreground: '#0B3C2D',
+        level: 'H'
+      });
+      ctx.drawImage(qr.canvas, qrX, qrY, qrSize, qrSize);
     }
     ctx.restore();
 
