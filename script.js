@@ -645,24 +645,24 @@ function initApp() {
     const qrX = w - qrSize - 60;
     const qrY = 1410;
 
-    ctx.save();
-    clipRoundedRect(ctx, qrX, qrY, qrSize, qrSize, 24);
+    // White rounded background (no clipping — preserves QR corner markers)
     ctx.fillStyle = '#FFFFFF';
-    ctx.fillRect(qrX, qrY, qrSize, qrSize);
+    drawRoundedRect(ctx, qrX, qrY, qrSize, qrSize, 12, true, false);
 
+    // Draw scannable QR with quiet-zone padding
     if (window.QRious) {
       const qr = new QRious({
         value: 'https://hhgoa26-frameingoa.vercel.app',
         size: 512,
-        background: 'white',
+        background: 'transparent',
         foreground: '#0B3C2D',
-        level: 'M'
+        level: 'M',
+        padding: 25
       });
       ctx.imageSmoothingEnabled = false;
       ctx.drawImage(qr.canvas, qrX, qrY, qrSize, qrSize);
       ctx.imageSmoothingEnabled = true;
     }
-    ctx.restore();
 
     ctx.restore();
   }
@@ -808,24 +808,24 @@ function initApp() {
     const qrX = w - qrSize - 60;
     const qrY = 410;
 
-    ctx.save();
-    clipRoundedRect(ctx, qrX, qrY, qrSize, qrSize, 12);
+    // White rounded background (no clipping — preserves QR corner markers)
     ctx.fillStyle = '#FFFFFF';
-    ctx.fillRect(qrX, qrY, qrSize, qrSize);
+    drawRoundedRect(ctx, qrX, qrY, qrSize, qrSize, 8, true, false);
 
+    // Draw scannable QR with quiet-zone padding
     if (window.QRious) {
       const qr = new QRious({
         value: 'https://hhgoa26-frameingoa.vercel.app',
         size: 512,
-        background: 'white',
+        background: 'transparent',
         foreground: '#0B3C2D',
-        level: 'M'
+        level: 'M',
+        padding: 25
       });
       ctx.imageSmoothingEnabled = false;
       ctx.drawImage(qr.canvas, qrX, qrY, qrSize, qrSize);
       ctx.imageSmoothingEnabled = true;
     }
-    ctx.restore();
 
     // Photo Frame
     const photoX = 60;

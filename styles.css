@@ -841,6 +841,10 @@ canvas {
     position: static;
   }
 
+  .preview-panel {
+    width: 100%;
+  }
+
   .action-buttons {
     grid-template-columns: 1fr;
   }
@@ -849,8 +853,17 @@ canvas {
     padding: 1.5rem 0 1rem;
   }
 
+  /* Show nav links as icon-only on mobile */
   .nav-center-links {
+    gap: 0.5rem;
+  }
+
+  .nav-center-item span {
     display: none;
+  }
+
+  .nav-center-item {
+    padding: 6px;
   }
 }
 
@@ -1036,6 +1049,10 @@ canvas {
     position: static;
   }
 
+  .preview-panel {
+    width: 100%;
+  }
+
   .action-buttons {
     grid-template-columns: 1fr;
   }
@@ -1044,8 +1061,17 @@ canvas {
     padding: 1.5rem 0 1rem;
   }
 
+  /* Show nav links as icon-only on mobile */
   .nav-center-links {
+    gap: 0.5rem;
+  }
+
+  .nav-center-item span {
     display: none;
+  }
+
+  .nav-center-item {
+    padding: 6px;
   }
 }
 
