@@ -653,12 +653,14 @@ function initApp() {
     if (window.QRious) {
       const qr = new QRious({
         value: 'https://hhgoa26-frameingoa.vercel.app',
-        size: qrSize,
+        size: 512,
         background: 'white',
         foreground: '#0B3C2D',
-        level: 'H'
+        level: 'M'
       });
+      ctx.imageSmoothingEnabled = false;
       ctx.drawImage(qr.canvas, qrX, qrY, qrSize, qrSize);
+      ctx.imageSmoothingEnabled = true;
     }
     ctx.restore();
 
@@ -814,12 +816,14 @@ function initApp() {
     if (window.QRious) {
       const qr = new QRious({
         value: 'https://hhgoa26-frameingoa.vercel.app',
-        size: qrSize,
+        size: 512,
         background: 'white',
         foreground: '#0B3C2D',
-        level: 'H'
+        level: 'M'
       });
+      ctx.imageSmoothingEnabled = false;
       ctx.drawImage(qr.canvas, qrX, qrY, qrSize, qrSize);
+      ctx.imageSmoothingEnabled = true;
     }
     ctx.restore();
 
